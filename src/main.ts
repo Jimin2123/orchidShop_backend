@@ -2,9 +2,24 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { SwaggerModule } from '@nestjs/swagger';
+import swaggerConfig from './configs/swagger.config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api', app, documentFactory());
+
+  // 유효성 검사 파이프 설정
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true, // DTO로 변환
+      whitelist: true, // 정의된 필드만 허용
+      forbidNonWhitelisted: true, // 정의되지 않은 필드 거부
+    })
+  );
 
   // 보안 설정
   // 1. CORS 활성화
