@@ -10,6 +10,7 @@ import {
 import { LocalAccount } from './local-account.entity';
 import { Address } from './address.entity';
 import { RefreshToken } from './refresh-token.entity';
+import { SocialAccount } from './social-account.entity';
 
 @Entity()
 export class User {
@@ -34,7 +35,7 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   phone: string;
 
   @Column({ nullable: true })
@@ -48,6 +49,9 @@ export class User {
 
   @OneToOne(() => LocalAccount, (localAccount) => localAccount.user)
   localAccount: LocalAccount;
+
+  @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user)
+  socialAccounts: SocialAccount[];
 
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];

@@ -1,10 +1,11 @@
-import { Body, Controller, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAccountDto, SignUpDto } from 'src/common/dtos/authentication/createLocalAccount.dto';
 import { SwaggerLogin, SwaggerLogout, SwaggerRefreshToken, SwaggerSignup } from 'src/common/swaggers/auth.swagger';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/guards/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { GoogleAuthGuard } from 'src/guards/google.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -50,6 +51,28 @@ export class AuthController {
     });
 
     return { accessToken };
+  }
+
+  @Get('google/login')
+  @UseGuards(GoogleAuthGuard)
+  googleLogin() {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleLoginRedirect(@Req() req, @Res() res) {
+    const { isNewUser, token } = await this.authService.socialLogin(req);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${token.accessToken}&isNewUser=${isNewUser}`;
+
+    res.cookie('refreshToken', token.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일 동안 유지
+    });
+
+    res.redirect(redirectUrl);
   }
 
   @Post('logout')

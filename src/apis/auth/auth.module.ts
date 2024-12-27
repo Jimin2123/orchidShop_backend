@@ -14,10 +14,12 @@ import { jwtConfig } from 'src/configs/jwt.config';
 import { JwtStrategy } from 'src/guards/passports/jwt.strategy';
 import { JwtAuthGuard } from 'src/guards/jwt.guard';
 import { UserModule } from '../user/user.module';
+import { SocialAccount } from 'src/entites/social-account.entity';
+import { GoogleStrategy } from 'src/guards/passports/google.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([LocalAccount, RefreshToken, User, Address]),
+    TypeOrmModule.forFeature([LocalAccount, RefreshToken, User, Address, SocialAccount]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -27,6 +29,6 @@ import { UserModule } from '../user/user.module';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtService, TokenService, JwtStrategy, JwtAuthGuard],
+  providers: [AuthService, JwtService, TokenService, JwtStrategy, JwtAuthGuard, GoogleStrategy, GoogleStrategy],
 })
 export class AuthModule {}

@@ -6,9 +6,10 @@ import { DataSource, MoreThan, QueryRunner, Repository } from 'typeorm';
 import { RefreshToken } from 'src/entites/refresh-token.entity';
 import { comparePassword, hashPassword } from 'src/common/utils/hash.util';
 import { runInTransaction } from 'src/common/utils/transcation.util';
-import { LocalAccountDto, SignUpDto } from 'src/common/dtos/authentication/createLocalAccount.dto';
+import { LocalAccountDto, SignUpDto, SocialRequest } from 'src/common/dtos/authentication/createLocalAccount.dto';
 import { User } from 'src/entites/user.entity';
 import { TokenPayload, Tokens, TokenService } from './token.service';
+import { SocialAccount } from 'src/entites/social-account.entity';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,8 @@ export class AuthService {
     private readonly localAccountRepository: Repository<LocalAccount>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
+    @InjectRepository(SocialAccount)
+    private readonly socialAccountRepository: Repository<SocialAccount>,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     private readonly dataSource: DataSource
@@ -193,5 +196,34 @@ export class AuthService {
     await this.refreshTokenRepository.save(refreshTokenData);
 
     return refreshToken;
+  }
+
+  async socialLogin(req: SocialRequest) {
+    const { provider_id, name, profile_image } = req.user;
+    if (!provider_id || !name || !profile_image) {
+      throw new BadRequestException('잘못된 소셜 로그인 요청입니다.');
+    }
+
+    const existingUser = await this.socialAccountRepository.findOne({
+      where: { provider_id, provider: req.user.provider },
+      relations: ['user'],
+    });
+
+    if (!existingUser) {
+      const savedUser = await runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
+        const createdUser = this.userService.createSocialUser(req);
+        const savedUser = await queryRunner.manager.save(createdUser);
+
+        const createdSocialAccount = this.socialAccountRepository.create({ user: createdUser, ...req.user });
+        await queryRunner.manager.save(createdSocialAccount);
+
+        return savedUser;
+      });
+      const token = await this.generateTokens(savedUser);
+      return { isNewUser: true, token };
+    } else {
+      const token = await this.generateTokens(existingUser.user);
+      return { isNewUser: !existingUser.user.isActive, token };
+    }
   }
 }

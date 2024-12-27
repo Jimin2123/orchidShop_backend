@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CreateUserDto } from '../user/createUser.dto';
 import { CreateAddressDto } from '../user/createAddress.dto';
 
@@ -32,4 +32,35 @@ export class SignUpDto {
   @Type(() => CreateAddressDto)
   @IsNotEmpty()
   address: CreateAddressDto;
+}
+
+class SocialUser {
+  @IsString()
+  provider_id: string;
+
+  @IsString()
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  profile_image?: string;
+
+  @IsString()
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsString()
+  provider: string;
+
+  @IsString()
+  accessToken: string;
+
+  providerData: Record<string, any>;
+}
+
+export class SocialRequest {
+  @ValidateNested()
+  @Type(() => SocialUser)
+  readonly user: SocialUser;
 }

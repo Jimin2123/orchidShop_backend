@@ -6,6 +6,8 @@ import { Address } from 'src/entites/address.entity';
 import { User } from 'src/entites/user.entity';
 import { Repository } from 'typeorm';
 import * as fs from 'fs';
+import { SocialRequest } from 'src/common/dtos/authentication/createLocalAccount.dto';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -18,6 +20,18 @@ export class UserService {
 
   createUser(createUserDto: CreateUserDto): User {
     return this.userRepository.create(createUserDto);
+  }
+
+  createSocialUser(socialUser: SocialRequest): User {
+    const { name, profile_image } = socialUser.user;
+    const createdUser = this.userRepository.create({
+      name,
+      profileImage: profile_image,
+      nickName: randomUUID(),
+      isActive: false,
+    });
+
+    return createdUser;
   }
 
   createAddress(user: User, addressDto: CreateAddressDto): Address {
