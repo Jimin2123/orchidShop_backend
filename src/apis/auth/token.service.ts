@@ -28,7 +28,7 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService
   ) {
-    this.accessTokenSecret = this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY', 'defaultAccessTokenSecret');
+    this.accessTokenSecret = this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY');
     this.refreshTokenSecret = this.configService.get<string>(
       'JWT_REFRESH_TOKEN_SECRET_KEY',
       'defaultRefreshTokenSecret'
@@ -58,15 +58,13 @@ export class TokenService {
       expiresIn,
       issuer: this.tokenIssuer,
     };
-    if (audience) {
-      options.audience = audience;
-    }
+    if (audience) options.audience = audience;
 
-    const token = this.jwtService.sign(payload, options);
-    if (typeof token !== 'string') {
-      throw new Error('Token generation failed');
+    try {
+      return this.jwtService.sign(payload, options);
+    } catch {
+      throw new UnauthorizedException('Token generation failed');
     }
-    return token;
   }
 
   /**

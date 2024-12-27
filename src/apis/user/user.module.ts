@@ -6,8 +6,9 @@ import { User } from 'src/entites/user.entity';
 import { Address } from 'src/entites/address.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Address])],
+  imports: [TypeOrmModule.forFeature([User, Address])], // 순환 참조 처리
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}
