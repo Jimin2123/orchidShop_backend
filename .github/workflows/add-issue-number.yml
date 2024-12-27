@@ -28,11 +28,39 @@ jobs:
             echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_ENV
           fi
 
+      - name: Check if Issue Number is Already Linked
+        id: check_commit
+        run: |
+          ISSUE_NUMBER=${{ env.issue_number }}
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+          if echo "$LAST_COMMIT_MSG" | grep -qx "Linked to #$ISSUE_NUMBER"; then
+            echo "The issue number is already linked in the commit message."
+            echo "skip_update=true" >> $GITHUB_ENV
+          else
+            echo "skip_update=false" >> $GITHUB_ENV
+          fi
+
       - name: Add Issue Number to Commit Message
-        if: env.issue_number != ''
+        if: env.issue_number != '' && env.skip_update == 'false'
         run: |
           ISSUE_NUMBER=${{ env.issue_number }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git log -1 --pretty=format:"%s%n%n%b%n%nLinked to #$ISSUE_NUMBER" | git commit --amend -F -
-          git push --force
+          git log -1 --pretty=format:"%s%n%n%b" > temp_commit_msg.txt
+          echo -e "\nLinked to #$ISSUE_NUMBER" >> temp_commit_msg.txt
+          git commit --amend -F temp_commit_msg.txt
+          rm temp_commit_msg.txt
+          git push --force-with-lease
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push using PAT (Fallback)
+        if: env.issue_number != '' && env.skip_update == 'false'
+        run: |
+          ISSUE_NUMBER=${{ env.issue_number }}
+          git config user.name "jimin"
+          git config user.email "kjimin2123@gmail.com"
+          git remote set-url origin https://Jimin2123:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
+          git push --force-with-lease
+        env:
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
