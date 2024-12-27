@@ -4,7 +4,7 @@ import { IsEmail, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { CreateUserDto } from '../user/createUser.dto';
 import { CreateAddressDto } from '../user/createAddress.dto';
 
-export class CreateLocalAccountDto {
+export class LocalAccountDto {
   @ApiProperty({ description: '이메일', example: 'test@example.com' })
   @IsEmail()
   email: string;
@@ -15,11 +15,11 @@ export class CreateLocalAccountDto {
 }
 
 export class SignUpDto {
-  @ApiProperty({ description: '로컬 계정 정보', type: CreateLocalAccountDto })
+  @ApiProperty({ description: '로컬 계정 정보', type: LocalAccountDto })
   @ValidateNested()
-  @Type(() => CreateLocalAccountDto)
+  @Type(() => LocalAccountDto)
   @IsNotEmpty()
-  localAccount: CreateLocalAccountDto;
+  localAccount: LocalAccountDto;
 
   @ApiProperty({ description: '사용자 정보', type: CreateUserDto })
   @ValidateNested()
@@ -32,11 +32,4 @@ export class SignUpDto {
   @Type(() => CreateAddressDto)
   @IsNotEmpty()
   address: CreateAddressDto;
-
-  @ApiProperty({
-    description: '사용자 프로필 이미지',
-    type: 'string',
-    format: 'binary',
-  })
-  profileImage?: any;
 }

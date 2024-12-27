@@ -16,7 +16,7 @@ export class LocalAccount {
   lastLogin: Date;
 
   @Column({ default: 0 })
-  loginAttempt: number;
+  loginAttempt: number; // 로그인 시도 횟수
 
   @OneToOne(() => User, (user) => user.localAccount, { onDelete: 'CASCADE' })
   @JoinColumn()

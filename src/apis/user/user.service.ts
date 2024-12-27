@@ -15,12 +15,16 @@ export class UserService {
     private readonly addressRepository: Repository<Address>
   ) {}
 
-  createUser(createUserDto: CreateUserDto, profileImage: string | null): User {
-    return this.userRepository.create({ ...createUserDto, profileImage });
+  createUser(createUserDto: CreateUserDto): User {
+    return this.userRepository.create(createUserDto);
   }
 
   createAddress(user: User, addressDto: CreateAddressDto): Address {
     return this.addressRepository.create({ ...addressDto, user: user });
+  }
+
+  async updateProfileImage(userId: string, imagePath: string) {
+    await this.userRepository.update({ id: userId }, { profileImage: imagePath });
   }
 
   async findUserById(userId: string): Promise<User> {
