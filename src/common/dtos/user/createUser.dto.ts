@@ -12,7 +12,7 @@ export class CreateUserDto {
   @IsString()
   nickName: string;
 
-  @ApiProperty({ description: '사용자 프로필 이미지', example: 'default-image' })
+  @ApiProperty({ description: '사용자 프로필 이미지', example: 'default-image', required: false })
   @IsOptional()
   @IsString()
   profileImage?: string;

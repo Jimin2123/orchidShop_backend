@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { User } from 'src/entites/user.entity';
 import { SignUpDto } from '../dtos/authentication/createLocalAccount.dto';
 
-export function SwaggerUserRegister() {
+export function SwaggerSignup() {
   return applyDecorators(
     ApiOperation({
       summary: '회원가입 API',

@@ -15,8 +15,8 @@ export class UserService {
     private readonly addressRepository: Repository<Address>
   ) {}
 
-  createUser(createUserDto: CreateUserDto): User {
-    return this.userRepository.create(createUserDto);
+  createUser(createUserDto: CreateUserDto, profileImage: string | null): User {
+    return this.userRepository.create({ ...createUserDto, profileImage });
   }
 
   createAddress(user: User, addressDto: CreateAddressDto): Address {

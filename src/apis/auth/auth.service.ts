@@ -20,7 +20,7 @@ export class AuthService {
     private readonly dataSource: DataSource
   ) {}
 
-  async register(SignUpDto: SignUpDto): Promise<User> {
+  async signup(SignUpDto: SignUpDto, profileImage: string | null): Promise<User> {
     const { localAccount, address, user } = SignUpDto;
     const { email, password } = localAccount;
 
@@ -42,7 +42,7 @@ export class AuthService {
     // 트랜잭션 내에서 사용자 생성 및 로컬 계정 생성
     const savedUser = await runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
       // 사용자 생성
-      const createdUser = this.userService.createUser(user);
+      const createdUser = this.userService.createUser(user, profileImage);
       const savedUser = await queryRunner.manager.save(createdUser);
 
       // 로컬 계정 생성

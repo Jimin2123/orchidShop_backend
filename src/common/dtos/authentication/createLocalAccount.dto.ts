@@ -15,21 +15,28 @@ export class CreateLocalAccountDto {
 }
 
 export class SignUpDto {
-  @ApiProperty({ description: '로컬 계정 정보' })
+  @ApiProperty({ description: '로컬 계정 정보', type: CreateLocalAccountDto })
   @ValidateNested()
   @Type(() => CreateLocalAccountDto)
   @IsNotEmpty()
   localAccount: CreateLocalAccountDto;
 
-  @ApiProperty({ description: '사용자 정보' })
+  @ApiProperty({ description: '사용자 정보', type: CreateUserDto })
   @ValidateNested()
   @Type(() => CreateUserDto)
   @IsNotEmpty()
   user: CreateUserDto;
 
-  @ApiProperty({ description: '주소 정보' })
+  @ApiProperty({ description: '주소 정보', type: CreateAddressDto })
   @ValidateNested()
   @Type(() => CreateAddressDto)
   @IsNotEmpty()
   address: CreateAddressDto;
+
+  @ApiProperty({
+    description: '사용자 프로필 이미지',
+    type: 'string',
+    format: 'binary',
+  })
+  profileImage?: any;
 }
