@@ -5,6 +5,7 @@ import { CreateUserDto } from 'src/common/dtos/user/createUser.dto';
 import { Address } from 'src/entites/address.entity';
 import { User } from 'src/entites/user.entity';
 import { Repository } from 'typeorm';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
@@ -24,9 +25,20 @@ export class UserService {
   }
 
   async updateProfileImage(userId: string, imagePath: string) {
+    // 1. 기존 사용자 정보 조회
+    const user = await this.findUserById(userId);
+
+    // 2. 기존 이미지 삭제
+    if (user.profileImage) {
+      const filePath = user.profileImage;
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath); // 파일 삭제
+      }
+    }
+
+    // 3. 새로운 이미지 경로 저장
     await this.userRepository.update({ id: userId }, { profileImage: imagePath });
   }
-
   async findUserById(userId: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {

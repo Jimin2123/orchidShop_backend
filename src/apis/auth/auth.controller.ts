@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAccountDto, SignUpDto } from 'src/common/dtos/authentication/createLocalAccount.dto';
-import { SwaggerSignup } from 'src/common/swaggers/auth.swagger';
+import { SwaggerLogin, SwaggerSignup } from 'src/common/swaggers/auth.swagger';
 import { Response } from 'express';
 
 @Controller('auth')
@@ -15,6 +15,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @SwaggerLogin()
   async login(@Body() localAccount: LocalAccountDto, @Res({ passthrough: true }) res: Response) {
     const { accessToken, refreshToken } = await this.authService.login(localAccount);
 
