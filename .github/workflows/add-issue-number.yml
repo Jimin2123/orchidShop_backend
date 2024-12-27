@@ -1,0 +1,38 @@
+name: Add Issue Number to Commit
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+      - 'bugfix/*'
+      - 'hotfix/*'
+
+jobs:
+  add-issue-number:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract Issue Number from Branch Name
+        id: extract_issue
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -oE '[0-9]+')
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "No issue number found in branch name."
+            echo "issue_number=" >> $GITHUB_ENV
+          else
+            echo "Found issue number: $ISSUE_NUMBER"
+            echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_ENV
+          fi
+
+      - name: Add Issue Number to Commit Message
+        if: env.issue_number != ''
+        run: |
+          ISSUE_NUMBER=${{ env.issue_number }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git log -1 --pretty=format:"%s%n%n%b%n%nLinked to #$ISSUE_NUMBER" | git commit --amend -F -
+          git push --force
