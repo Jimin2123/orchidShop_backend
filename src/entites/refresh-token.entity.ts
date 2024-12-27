@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
@@ -7,6 +15,7 @@ export class RefreshToken {
   id: string;
 
   @OneToOne(() => User, (user) => user.refreshToken, { onDelete: 'CASCADE' })
+  @JoinColumn()
   user: User;
 
   @Column('text')

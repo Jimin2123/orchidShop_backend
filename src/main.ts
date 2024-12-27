@@ -5,9 +5,12 @@ import rateLimit from 'express-rate-limit';
 import { SwaggerModule } from '@nestjs/swagger';
 import swaggerConfig from './configs/swagger.config';
 import { ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser());
 
   const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, documentFactory());

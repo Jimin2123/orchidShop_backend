@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -54,6 +53,5 @@ export class User {
   addresses: Address[];
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
-  @JoinColumn()
   refreshToken: RefreshToken;
 }
