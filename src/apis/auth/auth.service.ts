@@ -128,6 +128,14 @@ export class AuthService {
     return { accessToken, refreshToken: newRefreshToken };
   }
 
+  async logout(userId: string): Promise<void> {
+    const checkRefreshToken = await this.refreshTokenRepository.findOne({ where: { user: { id: userId } } });
+    if (!checkRefreshToken) {
+      throw new BadRequestException('로그아웃할 수 있는 토큰이 없습니다.');
+    }
+    await this.refreshTokenRepository.delete({ user: { id: userId } });
+  }
+
   /**
    * 사용자 로그인 시 액세스 토큰과 리프레시 토큰을 생성합니다.
    * @param user 로그인된 사용자
