@@ -48,11 +48,9 @@ export class User {
   updatedAt: Date;
 
   @OneToOne(() => LocalAccount, (localAccount) => localAccount.user)
-  @JoinColumn()
   localAccount: LocalAccount;
 
   @OneToMany(() => Address, (address) => address.user)
-  @JoinColumn()
   addresses: Address[];
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
