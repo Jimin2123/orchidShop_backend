@@ -16,8 +16,8 @@ import { JwtAuthGuard } from 'src/guards/jwt.guard';
 import { UserModule } from '../user/user.module';
 import { SocialAccount } from 'src/entites/social-account.entity';
 import { GoogleStrategy } from 'src/guards/passports/google.strategy';
-import { NaverAuthGuard } from 'src/guards/naver.guard';
 import { NaverStrategy } from 'src/guards/passports/naver.strategy';
+import { KakaoStrategty } from 'src/guards/passports/kakao.strategy';
 
 @Module({
   imports: [
@@ -36,11 +36,10 @@ import { NaverStrategy } from 'src/guards/passports/naver.strategy';
     JwtService,
     TokenService,
     JwtStrategy,
-    JwtAuthGuard,
     GoogleStrategy,
-    GoogleStrategy,
-    NaverAuthGuard,
     NaverStrategy,
+    KakaoStrategty,
+    JwtAuthGuard,
   ],
 })
 export class AuthModule {}
