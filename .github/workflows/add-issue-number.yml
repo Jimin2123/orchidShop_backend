@@ -50,7 +50,7 @@ jobs:
           echo -e "\nLinked to #$ISSUE_NUMBER" >> temp_commit_msg.txt
           git commit --amend -F temp_commit_msg.txt
           rm temp_commit_msg.txt
-          git push --force-with-lease
+          git push origin HEAD:${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,6 +61,6 @@ jobs:
           git config user.name "jimin"
           git config user.email "kjimin2123@gmail.com"
           git remote set-url origin https://Jimin2123:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
-          git push --force-with-lease
+          git push origin HEAD:${{ github.ref_name }}
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
