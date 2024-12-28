@@ -16,6 +16,8 @@ import { JwtAuthGuard } from 'src/guards/jwt.guard';
 import { UserModule } from '../user/user.module';
 import { SocialAccount } from 'src/entites/social-account.entity';
 import { GoogleStrategy } from 'src/guards/passports/google.strategy';
+import { NaverAuthGuard } from 'src/guards/naver.guard';
+import { NaverStrategy } from 'src/guards/passports/naver.strategy';
 
 @Module({
   imports: [
@@ -29,6 +31,16 @@ import { GoogleStrategy } from 'src/guards/passports/google.strategy';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtService, TokenService, JwtStrategy, JwtAuthGuard, GoogleStrategy, GoogleStrategy],
+  providers: [
+    AuthService,
+    JwtService,
+    TokenService,
+    JwtStrategy,
+    JwtAuthGuard,
+    GoogleStrategy,
+    GoogleStrategy,
+    NaverAuthGuard,
+    NaverStrategy,
+  ],
 })
 export class AuthModule {}

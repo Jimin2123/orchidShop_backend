@@ -6,6 +6,8 @@ import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/guards/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { GoogleAuthGuard } from 'src/guards/google.guard';
+import { NaverAuthGuard } from 'src/guards/naver.guard';
+import { Tokens } from './token.service';
 
 @Controller('auth')
 export class AuthController {
@@ -62,17 +64,18 @@ export class AuthController {
   async googleLoginRedirect(@Req() req, @Res() res) {
     const { isNewUser, token } = await this.authService.socialLogin(req);
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
-    const redirectUrl = `${frontendUrl}/auth/callback?token=${token.accessToken}&isNewUser=${isNewUser}`;
+    this.redirectUrl(token, isNewUser, res);
+  }
 
-    res.cookie('refreshToken', token.refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일 동안 유지
-    });
+  @Get('/naver/login')
+  @UseGuards(NaverAuthGuard)
+  async naverAuth() {}
 
-    res.redirect(redirectUrl);
+  @Get('/naver/callback')
+  @UseGuards(NaverAuthGuard)
+  async naverAuthCallback(@Req() req, @Res() res: Response) {
+    const { isNewUser, token } = await this.authService.socialLogin(req);
+    this.redirectUrl(token, isNewUser, res);
   }
 
   @Post('logout')
@@ -81,5 +84,20 @@ export class AuthController {
   async logout(@CurrentUser() userId: string, @Res({ passthrough: true }) res: Response): Promise<void> {
     res.clearCookie('refreshToken');
     await this.authService.logout(userId);
+  }
+
+  private redirectUrl(tokens: Tokens, isNewUser: boolean, res: Response) {
+    const { accessToken, refreshToken } = tokens;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${accessToken}&isNewUser=${isNewUser}`;
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일 동안 유지
+    });
+
+    res.redirect(redirectUrl);
   }
 }

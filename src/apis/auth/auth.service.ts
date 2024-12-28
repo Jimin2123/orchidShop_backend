@@ -199,8 +199,8 @@ export class AuthService {
   }
 
   async socialLogin(req: SocialRequest) {
-    const { provider_id, name, profile_image } = req.user;
-    if (!provider_id || !name || !profile_image) {
+    const { provider_id, name } = req.user;
+    if (!provider_id || !name) {
       throw new BadRequestException('잘못된 소셜 로그인 요청입니다.');
     }
 
