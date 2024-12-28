@@ -199,10 +199,7 @@ export class AuthService {
   }
 
   async socialLogin(req: SocialRequest) {
-    const { provider_id, name } = req.user;
-    if (!provider_id || !name) {
-      throw new BadRequestException('잘못된 소셜 로그인 요청입니다.');
-    }
+    const { provider_id } = req.user;
 
     const existingUser = await this.socialAccountRepository.findOne({
       where: { provider_id, provider: req.user.provider },

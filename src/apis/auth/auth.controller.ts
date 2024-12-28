@@ -8,6 +8,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { GoogleAuthGuard } from 'src/guards/google.guard';
 import { NaverAuthGuard } from 'src/guards/naver.guard';
 import { Tokens } from './token.service';
+import { KakaoAuthGuard } from 'src/guards/kakao.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -67,13 +68,24 @@ export class AuthController {
     this.redirectUrl(token, isNewUser, res);
   }
 
-  @Get('/naver/login')
+  @Get('naver/login')
   @UseGuards(NaverAuthGuard)
   async naverAuth() {}
 
-  @Get('/naver/callback')
+  @Get('naver/callback')
   @UseGuards(NaverAuthGuard)
   async naverAuthCallback(@Req() req, @Res() res: Response) {
+    const { isNewUser, token } = await this.authService.socialLogin(req);
+    this.redirectUrl(token, isNewUser, res);
+  }
+
+  @Get('kakao/login')
+  @UseGuards(KakaoAuthGuard)
+  async kakaoLogin() {}
+
+  @Get('kakao/callback')
+  @UseGuards(KakaoAuthGuard)
+  async kakaoLoginRedirect(@Req() req, @Res() res: Response) {
     const { isNewUser, token } = await this.authService.socialLogin(req);
     this.redirectUrl(token, isNewUser, res);
   }
