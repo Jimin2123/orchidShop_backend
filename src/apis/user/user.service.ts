@@ -64,8 +64,4 @@ export class UserService {
   async findUserByNickName(nickName: string): Promise<User> {
     return await this.userRepository.findOne({ where: { nickName } });
   }
-
-  async findUsers(): Promise<User[]> {
-    return await this.userRepository.find();
-  }
 }
