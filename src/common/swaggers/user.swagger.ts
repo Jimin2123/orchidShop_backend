@@ -1,10 +1,18 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 export function SwaggerGetProfile() {
   return applyDecorators(
     ApiOperation({
       summary: '사용자 프로필 가져오는 API',
+    }),
+    ApiParam({
+      name: 'userId',
+      description: '사용자 ID',
+      required: false,
+      schema: {
+        type: 'string',
+      },
     }),
     ApiBearerAuth('JWT'),
     ApiResponse({
