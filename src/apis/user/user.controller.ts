@@ -1,13 +1,14 @@
-import { Controller, Get, Param, Post, UploadedFile, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UploadedFile, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UploadImage } from 'src/common/decorators/image-upload.decorator';
 import { CurrentUser, CurrentUserRole } from 'src/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt.guard';
-import { SwaggerGetProfile, SwaggerUploadImage } from 'src/common/swaggers/user.swagger';
+import { SwaggerGetProfile, SwaggerUpdateUser, SwaggerUploadImage } from 'src/common/swaggers/user.swagger';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decoratort';
+import { UpdateUserDto } from 'src/common/dtos/user/updateUser.dto';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -35,6 +36,12 @@ export class UserController {
   @Roles(UserRole.ADMIN)
   async getUsers() {
     return await this.userService.findUsers();
+  }
+
+  @Put()
+  @SwaggerUpdateUser()
+  async updateUser(@CurrentUser() userId: string, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.updateUser(userId, updateUserDto);
   }
 
   @Post('upload-image')
