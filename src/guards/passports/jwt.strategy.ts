@@ -13,10 +13,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: TokenPayload): Promise<string> {
+  async validate(payload: TokenPayload): Promise<{ userId: string; role: string }> {
     if (!payload || !payload.sub) {
       throw new UnauthorizedException('유효하지 않은 토큰입니다.');
     }
-    return payload.sub;
+    return { userId: payload.sub, role: payload.role };
   }
 }
