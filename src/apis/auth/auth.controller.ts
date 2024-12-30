@@ -9,10 +9,15 @@ import { GoogleAuthGuard } from 'src/guards/google.guard';
 import { NaverAuthGuard } from 'src/guards/naver.guard';
 import { Tokens } from './token.service';
 import { KakaoAuthGuard } from 'src/guards/kakao.guard';
+import { CustomWinstonLogger } from 'src/logger/logger.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  private readonly contextName = AuthController.name;
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger: CustomWinstonLogger
+  ) {}
 
   @Post('register')
   @SwaggerSignup()
@@ -23,6 +28,7 @@ export class AuthController {
   @Post('login')
   @SwaggerLogin()
   async login(@Body() localAccount: LocalAccountDto, @Res({ passthrough: true }) res: Response) {
+    this.logger.log(`로그인 요청: ${localAccount.email}`, this.contextName);
     const { accessToken, refreshToken } = await this.authService.login(localAccount);
 
     // refreshToken 쿠키 설정
@@ -33,6 +39,7 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    this.logger.log(`로그인 성공: ${localAccount.email}`, this.contextName);
     return { accessToken };
   }
 
