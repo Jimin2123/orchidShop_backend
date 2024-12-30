@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  Check,
 } from 'typeorm';
 import { User } from './user.entity';
 
@@ -22,6 +23,7 @@ export class RefreshToken {
   token: string;
 
   @Column({ type: 'timestamp' })
+  @Check(`"expiresAt" > CURRENT_TIMESTAMP`)
   expiresAt: Date;
 
   @CreateDateColumn()
