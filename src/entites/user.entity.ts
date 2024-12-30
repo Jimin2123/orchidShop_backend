@@ -12,6 +12,7 @@ import { Address } from './address.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { SocialAccount } from './social-account.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { Gender } from 'src/common/enums/gender.enum';
 
 @Entity()
 export class User {
@@ -27,8 +28,8 @@ export class User {
   @Column({ nullable: true })
   birth: Date;
 
-  @Column({ default: true })
-  gender: boolean;
+  @Column({ type: 'enum', enum: Gender, default: Gender.OTHER })
+  gender: Gender;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
@@ -59,4 +60,13 @@ export class User {
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshToken: RefreshToken;
+
+  // 활성화 상태 전환 메서드
+  activate(): void {
+    this.isActive = true;
+  }
+
+  deactivate(): void {
+    this.isActive = false;
+  }
 }

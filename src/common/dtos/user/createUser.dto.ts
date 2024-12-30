@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Gender } from 'src/common/enums/gender.enum';
 
 export class CreateUserDto {
   @ApiProperty({ description: '사용자 이름', example: '홍길동' })
@@ -17,13 +18,14 @@ export class CreateUserDto {
   @IsString()
   profileImage?: string;
 
-  @ApiProperty({ description: '사용자 성별 (true = 남성, false = 여성)', example: true })
-  @IsBoolean()
-  gender: boolean;
+  @ApiProperty({ description: '사용자 성별', enum: Gender, example: Gender.MALE })
+  @IsEnum(Gender)
+  gender: Gender;
 
   @ApiProperty({ description: '사용자 생년월일', example: '1990-01-01' })
-  @IsString()
-  birth: string;
+  @IsDateString()
+  @IsOptional()
+  birth?: string;
 
   @ApiProperty({ description: '사용자 전화번호', example: '010-1234-5678' })
   @IsString()

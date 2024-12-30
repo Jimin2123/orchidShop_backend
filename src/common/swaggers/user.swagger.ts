@@ -55,6 +55,7 @@ export function SwaggerUploadImage() {
     ApiResponse({ status: 500, description: '서버 에러' })
   );
 }
+
 export function SwaggerUpdateUser() {
   return applyDecorators(
     ApiTags('user'),
@@ -67,27 +68,114 @@ export function SwaggerUpdateUser() {
       description: '업데이트할 사용자 정보',
       type: UpdateUserDto,
       examples: {
-        기본: {
-          summary: '기본 정보 업데이트',
-          description: '이름과 전화번호 같은 기본 정보를 업데이트합니다.',
+        사용자정보: {
+          summary: '사용자 정보만 수정',
+          description: '이름, 닉네임, 전화번호만 수정하는 요청 예제입니다.',
           value: {
-            name: '홍길동',
-            phone: '010-1234-5678',
+            user: {
+              name: '홍길동',
+              nickName: '길동홍',
+              phone: '010-1234-5678',
+            },
           },
         },
-        주소포함: {
-          summary: '주소 업데이트 포함',
-          description: '사용자 정보와 함께 주소도 업데이트합니다.',
+        로컬계정: {
+          summary: '로컬 계정만 수정',
+          description: '로컬 계정 비밀번호를 변경하는 요청 예제입니다.',
           value: {
-            name: '홍길동',
+            localAccount: {
+              email: 'tests@example.com',
+              password: 'example123!',
+            },
+          },
+        },
+        주소업데이트: {
+          summary: '주소만 업데이트',
+          description: '기존 주소 정보를 업데이트하는 요청 예제입니다.',
+          value: {
             addresses: [
               {
+                id: 'c6ca0c4d-8232-4127-b95f-0a4ecfb978ec',
                 address: '서울특별시 강남구 테헤란로 123',
                 detailAddress: '101호',
                 zipCode: '12345',
                 city: '서울',
                 state: '강남구',
                 isDefault: true,
+              },
+            ],
+          },
+        },
+        주소추가: {
+          summary: '새로운 주소만 추가',
+          description: '새로운 주소를 추가하는 요청 예제입니다.',
+          value: {
+            addresses: [
+              {
+                address: '서울특별시 송파구 올림픽로 300',
+                detailAddress: '302호',
+                zipCode: '54321',
+                city: '서울',
+                state: '송파구',
+                isDefault: false,
+              },
+            ],
+          },
+        },
+        주소업데이트추가: {
+          summary: '주소 업데이트와 새로운 주소 추가',
+          description: '기존 주소를 업데이트하고 새로운 주소를 추가하는 요청 예제입니다.',
+          value: {
+            addresses: [
+              {
+                id: 'c6ca0c4d-8232-4127-b95f-0a4ecfb978ec',
+                address: '서울특별시 강남구 테헤란로 123',
+                detailAddress: '101호',
+                zipCode: '12345',
+                city: '서울',
+                state: '강남구',
+                isDefault: true,
+              },
+              {
+                address: '서울특별시 송파구 올림픽로 300',
+                detailAddress: '302호',
+                zipCode: '54321',
+                city: '서울',
+                state: '송파구',
+                isDefault: false,
+              },
+            ],
+          },
+        },
+        모든정보: {
+          summary: '모든 정보를 수정',
+          description: '사용자 정보, 로컬 계정, 주소까지 모두 수정하는 요청 예제입니다.',
+          value: {
+            user: {
+              name: '홍길동',
+              nickName: '길동홍',
+              phone: '010-9876-5432',
+              localAccount: {
+                password: 'securePassword123!',
+              },
+            },
+            addresses: [
+              {
+                id: 'existing-address-id',
+                address: '서울특별시 강남구 테헤란로 123',
+                detailAddress: '101호',
+                zipCode: '12345',
+                city: '서울',
+                state: '강남구',
+                isDefault: true,
+              },
+              {
+                address: '서울특별시 송파구 올림픽로 300',
+                detailAddress: '302호',
+                zipCode: '54321',
+                city: '서울',
+                state: '송파구',
+                isDefault: false,
               },
             ],
           },

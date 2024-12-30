@@ -8,10 +8,11 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import * as fs from 'fs';
 import { SocialRequest } from 'src/common/dtos/authentication/createLocalAccount.dto';
 import { randomUUID } from 'crypto';
-import { UpdateUserDto } from 'src/common/dtos/user/updateUser.dto';
+import { UpdateUserWithDTOs } from 'src/common/dtos/user/updateUser.dto';
 import { LocalAccount } from 'src/entites/local-account.entity';
 import { hashPassword } from 'src/common/utils/hash.util';
 import { runInTransaction } from 'src/common/utils/transcation.util';
+import { UpdateAddressDto } from 'src/common/dtos/user/updateAddress.dto';
 
 @Injectable()
 export class UserService {
@@ -43,14 +44,14 @@ export class UserService {
     return this.addressRepository.create({ ...addressDto, user: user });
   }
 
-  async updateUser(userId: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async updateUser(userId: string, updateUserDto: UpdateUserWithDTOs): Promise<User> {
     return await runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
       const userRepository = queryRunner.manager.getRepository(User);
       const addressRepository = queryRunner.manager.getRepository(Address);
       const localAccountRepository = queryRunner.manager.getRepository(LocalAccount);
 
-      // 사용자 조회
-      const user = await userRepository.findOne({
+      // 사용자 조회 및 관계 로드
+      let user = await userRepository.findOne({
         where: { id: userId },
         relations: ['addresses', 'localAccount'],
       });
@@ -59,32 +60,40 @@ export class UserService {
         throw new NotFoundException(`사용자(${userId})를 찾을 수 없습니다.`);
       }
 
-      // 사용자 기본 정보 업데이트
-      Object.assign(user, updateUserDto);
+      // 사용자 정보 업데이트 (먼저 수행)
+      if (updateUserDto.user) {
+        Object.assign(user, updateUserDto.user);
+        await userRepository.save(user);
+
+        // 사용자 정보를 다시 로드
+        user = await userRepository.findOne({
+          where: { id: userId },
+          relations: ['addresses', 'localAccount'],
+        });
+      }
 
       // 주소 업데이트
       if (updateUserDto.addresses) {
-        const addressesToSave = [];
-        for (const addressDto of updateUserDto.addresses) {
-          if (addressDto.id) {
-            // 기존 주소 업데이트
-            const address = await addressRepository.findOne({ where: { id: addressDto.id } });
-            if (!address) continue;
-            Object.assign(address, { ...addressDto, user }); // 관계 명시
-            addressesToSave.push(address);
-          } else {
-            // 새로운 주소 추가
-            const newAddress = addressRepository.create({ ...addressDto, user }); // 관계 명시
-            addressesToSave.push(newAddress);
+        const addressesToUpdate = updateUserDto.addresses.filter((addr) => addr.id) as UpdateAddressDto[];
+        const addressesToCreate = updateUserDto.addresses.filter((addr) => !addr.id) as CreateAddressDto[];
+
+        // 기존 주소 업데이트
+        for (const addressDto of addressesToUpdate) {
+          const existingAddress = await addressRepository.findOne({ where: { id: addressDto.id } });
+          if (existingAddress) {
+            Object.assign(existingAddress, { ...addressDto, user: user });
+            await addressRepository.save(existingAddress);
           }
         }
 
-        if (addressesToSave.length > 0) {
-          await addressRepository.save(addressesToSave);
+        // 새로운 주소 추가
+        if (addressesToCreate.length > 0) {
+          const newAddresses = addressesToCreate.map((addr) => addressRepository.create({ ...addr, user: user }));
+          await addressRepository.save(newAddresses);
         }
       }
 
-      // 계정 정보 업데이트
+      // 로컬 계정 업데이트
       if (updateUserDto.localAccount) {
         if (!user.localAccount) {
           throw new NotFoundException(`사용자(${userId})의 로컬 계정을 찾을 수 없습니다.`);
@@ -98,8 +107,7 @@ export class UserService {
         await localAccountRepository.save(user.localAccount);
       }
 
-      // 최종 사용자 업데이트
-      return await userRepository.save(user);
+      return user;
     });
   }
 
