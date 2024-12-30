@@ -1,6 +1,6 @@
 // dto/update-user.dto.ts
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDateString, IsEnum, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { UpdateLocalAccountDto } from '../authentication/updateLocalAccount.dto';
 import { UpdateAddressDto } from './updateAddress.dto';
 import { UserRole } from 'src/common/enums/user-role.enum';
@@ -8,11 +8,6 @@ import { Gender } from 'src/common/enums/gender.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDto {
-  @ApiProperty({ description: '사용자 ID', example: '550e8400-e29b-41d4-a716-446655440000' })
-  @IsUUID()
-  @IsOptional()
-  id?: string;
-
   @ApiProperty({ description: '사용자 이름', example: '홍길동' })
   @IsString()
   @IsOptional()
@@ -52,6 +47,13 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   profileImage?: string;
+}
+
+export class UpdateUserWithDTOs {
+  @ValidateNested()
+  @Type(() => UpdateUserDto)
+  @IsOptional()
+  user?: UpdateUserDto;
 
   @ValidateNested({ each: true })
   @Type(() => UpdateAddressDto)

@@ -62,8 +62,8 @@ export class TokenService {
 
     try {
       return this.jwtService.sign(payload, options);
-    } catch {
-      throw new UnauthorizedException('Token generation failed');
+    } catch (error) {
+      throw new UnauthorizedException(`토큰 생성에 실패했습니다: ${error.message}`);
     }
   }
 
@@ -96,8 +96,8 @@ export class TokenService {
         secret: this.accessTokenSecret,
         issuer: this.tokenIssuer,
       });
-    } catch {
-      throw new UnauthorizedException('Invalid or expired access token');
+    } catch (error) {
+      throw new UnauthorizedException(`액세스 토큰 검증에 실패했습니다: ${error.message}`);
     }
   }
 
@@ -113,8 +113,8 @@ export class TokenService {
         issuer: this.tokenIssuer,
         audience: this.tokenAudience,
       });
-    } catch {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+    } catch (error) {
+      throw new UnauthorizedException(`리프레시 토큰 검증에 실패했습니다: ${error.message}`);
     }
   }
 }

@@ -1,8 +1,8 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
-@Unique(['user', 'isDefault'])
+@Index('IDX_USER_DEFAULT_ADDRESS', ['user', 'isDefault'], { where: 'isDefault = true' })
 export class Address {
   @PrimaryGeneratedColumn('uuid')
   id: string;

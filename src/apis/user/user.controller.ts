@@ -8,7 +8,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decoratort';
-import { UpdateUserDto } from 'src/common/dtos/user/updateUser.dto';
+import { UpdateUserWithDTOs } from 'src/common/dtos/user/updateUser.dto';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -40,7 +40,7 @@ export class UserController {
 
   @Put()
   @SwaggerUpdateUser()
-  async updateUser(@CurrentUser() userId: string, @Body() updateUserDto: UpdateUserDto) {
+  async updateUser(@CurrentUser() userId: string, @Body() updateUserDto: UpdateUserWithDTOs) {
     return await this.userService.updateUser(userId, updateUserDto);
   }
 

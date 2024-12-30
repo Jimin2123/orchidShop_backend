@@ -10,6 +10,7 @@ import { LocalAccountDto, SignUpDto, SocialRequest } from 'src/common/dtos/authe
 import { User } from 'src/entites/user.entity';
 import { TokenPayload, Tokens, TokenService } from './token.service';
 import { SocialAccount } from 'src/entites/social-account.entity';
+import { Address } from 'src/entites/address.entity';
 
 @Injectable()
 export class AuthService {
@@ -26,46 +27,51 @@ export class AuthService {
     private readonly dataSource: DataSource
   ) {}
 
-  async signup(SignUpDto: SignUpDto): Promise<User> {
-    const { localAccount, address, user } = SignUpDto;
+  async signup(signUpDto: SignUpDto): Promise<User> {
+    const { localAccount, address, user } = signUpDto;
     const { email, password } = localAccount;
 
-    // 사용 중인 이메일 확인
+    // 이메일 중복 확인
     const existingEmail = await this.localAccountRepository.findOne({ where: { email } });
     if (existingEmail) {
-      throw new BadRequestException('이미 사용중인 이메일입니다.');
+      throw new BadRequestException('이미 사용 중인 이메일입니다.');
     }
 
-    // 사용 중인 닉네임 확인
+    // 닉네임 중복 확인
     const existingUser = await this.userService.findUserByNickName(user.nickName);
     if (existingUser) {
-      throw new BadRequestException('이미 사용중인 닉네임입니다.');
+      throw new BadRequestException('이미 사용 중인 닉네임입니다.');
     }
 
     // 비밀번호 해싱
     const hashedPassword = await hashPassword(password);
 
-    // 트랜잭션 내에서 사용자 생성 및 로컬 계정 생성
-    const savedUser = await runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
+    // 트랜잭션 실행
+    const savedUser = await runInTransaction(this.dataSource, async (queryRunner) => {
+      const userRepository = queryRunner.manager.getRepository(User);
+      const addressRepository = queryRunner.manager.getRepository(Address);
+      const localAccountRepository = queryRunner.manager.getRepository(LocalAccount);
+
       // 사용자 생성
-      const createdUser = this.userService.createUser(user);
-      const savedUser = await queryRunner.manager.save(createdUser);
+      const createdUser = userRepository.create(user);
+      const savedUser = await userRepository.save(createdUser);
 
       // 로컬 계정 생성
-      const createdLocalAccount = this.localAccountRepository.create({
+      const createdLocalAccount = localAccountRepository.create({
         email,
         password: hashedPassword,
         user: savedUser,
       });
-      await queryRunner.manager.save(createdLocalAccount);
+      await localAccountRepository.save(createdLocalAccount);
 
       // 주소 생성
-      const createdAddress = this.userService.createAddress(savedUser, address);
-      await queryRunner.manager.save(createdAddress);
+      const createdAddress = addressRepository.create({ user: savedUser, ...address });
+      await addressRepository.save(createdAddress);
 
       return savedUser;
     });
 
+    // 사용자 조회 및 반환
     return await this.userService.findUserById(savedUser.id);
   }
 
