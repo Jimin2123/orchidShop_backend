@@ -1,7 +1,8 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { TypeOrmLogger } from 'src/logger/typeorm-logger.service';
 
-export const typeORMConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
+export const typeORMConfig = (configService: ConfigService, typeormLogger: TypeOrmLogger): TypeOrmModuleOptions => ({
   type: configService.get<string>('DATABASE_TYPE') as 'mysql' | 'mariadb' | 'postgres' | 'sqlite' | 'mssql',
   host: configService.get<string>('DATABASE_HOST'),
   port: configService.get<number>('DATABASE_PORT'),
@@ -11,5 +12,6 @@ export const typeORMConfig = (configService: ConfigService): TypeOrmModuleOption
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   synchronize: true, // 개발 환경에서만 true로 설정, 프로덕션에서는 false로 설정
   autoLoadEntities: true,
-  logging: true,
+  logger: typeormLogger,
+  logging: ['query', 'error', 'schema', 'warn'], // 로그 범위 설정
 });

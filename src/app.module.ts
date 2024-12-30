@@ -7,6 +7,8 @@ import { UserModule } from './apis/user/user.module';
 import { ClsModule } from 'nestjs-cls';
 import { ContextMiddleware } from './pipes/middlewares/context.middleware';
 import { CustomWinstonModule } from './logger/logger.module';
+import { LoggingMiddleware } from './pipes/middlewares/logging.middleware';
+import { TypeOrmLogger } from './logger/typeorm-logger.service';
 
 @Module({
   imports: [
@@ -15,8 +17,9 @@ import { CustomWinstonModule } from './logger/logger.module';
     CustomWinstonModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
+      inject: [ConfigService, TypeOrmLogger],
       useFactory: typeORMConfig,
+      extraProviders: [TypeOrmLogger],
     }),
     AuthModule,
     UserModule,
@@ -27,5 +30,6 @@ import { CustomWinstonModule } from './logger/logger.module';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(ContextMiddleware).forRoutes('*'); // 모든 경로에 미들웨어 적용
+    consumer.apply(LoggingMiddleware).forRoutes('*'); // 모든 라우트에 미들웨어 적용
   }
 }
