@@ -33,4 +33,14 @@ export class Address {
 
   @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
   user: User;
+
+  // 기본 주소 설정 메서드
+  setDefaultAddress(): void {
+    this.isDefault = true;
+  }
+
+  // 기본 주소 해제 메서드
+  unsetDefaultAddress(): void {
+    this.isDefault = false;
+  }
 }
