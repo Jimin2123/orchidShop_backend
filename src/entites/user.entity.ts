@@ -11,6 +11,7 @@ import { LocalAccount } from './local-account.entity';
 import { Address } from './address.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { SocialAccount } from './social-account.entity';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 @Entity()
 export class User {
@@ -29,8 +30,8 @@ export class User {
   @Column({ default: true })
   gender: boolean;
 
-  @Column({ default: 'user' })
-  role: string;
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @Column({ default: true })
   isActive: boolean;

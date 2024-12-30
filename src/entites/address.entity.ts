@@ -1,7 +1,8 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
+@Unique(['user', 'isDefault'])
 export class Address {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -21,7 +22,7 @@ export class Address {
   @Column()
   state: string; // 도/시/군
 
-  @Column()
+  @Column({ default: false })
   isDefault: boolean;
 
   @CreateDateColumn()
