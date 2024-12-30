@@ -22,13 +22,13 @@ export class AuthController {
   @Post('register')
   @SwaggerSignup()
   async signup(@Body() signUpDto: SignUpDto) {
-    this.logger.log('회원가입 요청', this.contextName);
     return this.authService.signup(signUpDto);
   }
 
   @Post('login')
   @SwaggerLogin()
   async login(@Body() localAccount: LocalAccountDto, @Res({ passthrough: true }) res: Response) {
+    this.logger.log(`로그인 요청: ${localAccount.email}`, this.contextName);
     const { accessToken, refreshToken } = await this.authService.login(localAccount);
 
     // refreshToken 쿠키 설정
@@ -39,6 +39,7 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    this.logger.log(`로그인 성공: ${localAccount.email}`, this.contextName);
     return { accessToken };
   }
 

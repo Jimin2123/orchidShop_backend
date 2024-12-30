@@ -46,6 +46,7 @@ export class UserController {
   @Put()
   @SwaggerUpdateUser()
   async updateUser(@CurrentUser() userId: string, @Body() updateUserDto: UpdateUserWithDTOs) {
+    this.logger.log(`사용자 정보 수정 API 활성화`, this.contextName);
     return await this.userService.updateUser(userId, updateUserDto);
   }
 
