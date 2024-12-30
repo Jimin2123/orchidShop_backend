@@ -13,5 +13,5 @@ export const typeORMConfig = (configService: ConfigService, typeormLogger: TypeO
   synchronize: true, // 개발 환경에서만 true로 설정, 프로덕션에서는 false로 설정
   autoLoadEntities: true,
   logger: typeormLogger,
-  logging: ['query', 'error', 'schema', 'warn'], // 로그 범위 설정
+  logging: true, // 로그 범위 설정
 });
