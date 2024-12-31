@@ -6,7 +6,7 @@ export class ProductView {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => Product, (product) => product.view, { lazy: true })
+  @OneToOne(() => Product, (product) => product.view, { onDelete: 'CASCADE' })
   product: Product;
 
   @Column({ default: 0 })

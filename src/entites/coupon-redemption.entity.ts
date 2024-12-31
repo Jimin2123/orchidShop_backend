@@ -4,7 +4,7 @@ import { Coupon } from './coupon.entity';
 import { Orders } from './orders.entity';
 
 @Entity()
-@Index(['coupon', 'orderId', 'user'], { unique: true }) // 사용자 포함
+@Index(['coupon', 'order', 'user'], { unique: true }) // 사용자 포함
 export class CouponRedemption {
   @PrimaryGeneratedColumn('uuid')
   id: string;

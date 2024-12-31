@@ -15,7 +15,7 @@ export default class ProductPriceHistory {
   @Column({ type: 'timestamp' })
   startDate: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   endDate: Date;
 
   @CreateDateColumn()

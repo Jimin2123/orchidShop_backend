@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -20,8 +21,8 @@ import { CouponTarget } from './coupon-target.entity';
 
 @Entity()
 export class Product {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Index()
   @Column({ type: 'varchar', length: 255 })
@@ -40,6 +41,7 @@ export class Product {
   isFeatured: boolean;
 
   @OneToOne(() => ProductView, (productView) => productView.product)
+  @JoinColumn()
   view: ProductView;
 
   @Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.ACTIVE })

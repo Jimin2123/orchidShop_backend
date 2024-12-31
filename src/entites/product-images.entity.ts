@@ -3,16 +3,16 @@ import { Product } from './product.entity';
 
 @Entity()
 export class ProductImages {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @ManyToOne(() => Product, (product) => product.images)
+  @ManyToOne(() => Product, (product) => product.images, { onDelete: 'CASCADE', lazy: true })
   product: Product;
 
   @Column()
   url: string;
 
-  @Column()
+  @Column({ nullable: true })
   altText: string;
 
   @Column({ default: false })

@@ -20,10 +20,10 @@ export class ProductDiscount {
   @Column('decimal', { precision: 10, scale: 2 })
   value: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   startDate: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   endDate: Date;
 
   @Column({ default: true })
