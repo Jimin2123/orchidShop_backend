@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CouponRedemption } from './coupon-redemption.entity';
 import { CouponTarget } from './coupon-target.entity';
 import { UserGrade } from 'src/common/enums/user-grade.enum';
+import { CouponType } from 'src/common/enums/coupon-type.enum';
 
 @Entity()
 export class Coupon {
@@ -11,8 +12,12 @@ export class Coupon {
   @Column({ unique: true })
   code: string; // 쿠폰 코드
 
-  @Column({ type: 'enum', enum: ['PERCENTAGE', 'FIXED_AMOUNT'] })
-  type: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  @Column({
+    type: 'enum',
+    enum: CouponType,
+    default: CouponType.PERCENTAGE, // 기본값 추가
+  })
+  type: CouponType; // 쿠폰 타입 (퍼센트 또는 고정 금액)
 
   @Column('decimal', { precision: 10, scale: 2 })
   value: number;
@@ -32,8 +37,8 @@ export class Coupon {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ nullable: true })
-  usageLimit: number;
+  @Column({ type: 'int', nullable: true })
+  usageLimit?: number; // 쿠폰 사용 가능 횟수 (null = 무제한)
 
   @Column({ default: 0 })
   usedCount: number;

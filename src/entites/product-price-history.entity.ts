@@ -6,7 +6,7 @@ export default class ProductPriceHistory {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Product, (product) => product.priceHistories)
+  @ManyToOne(() => Product, (product) => product.priceHistories, { onDelete: 'CASCADE' })
   product: Product;
 
   @Column('decimal', { precision: 10, scale: 2 })

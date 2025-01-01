@@ -3,8 +3,8 @@ import { ProductTags } from './product-tags.entity';
 
 @Entity()
 export class Tag {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @OneToMany(() => ProductTags, (productTags) => productTags.tag)
   productTags: ProductTags[];

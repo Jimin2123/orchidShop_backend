@@ -3,10 +3,10 @@ import { Product } from './product.entity';
 
 @Entity()
 export class ProductImages {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @ManyToOne(() => Product, (product) => product.images)
+  @ManyToOne(() => Product, (product) => product.images, { onDelete: 'CASCADE' })
   product: Product;
 
   @Column()

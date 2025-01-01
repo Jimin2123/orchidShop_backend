@@ -7,7 +7,7 @@ export class ProductTags {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Product, (product) => product.productTags)
+  @ManyToOne(() => Product, (product) => product.productTags, { onDelete: 'CASCADE' })
   product: Product;
 
   @ManyToOne(() => Tag, (tag) => tag.productTags)

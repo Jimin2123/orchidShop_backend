@@ -15,7 +15,7 @@ import { CouponTarget } from './coupon-target.entity';
 @Entity()
 @Tree('closure-table') // 계층적 구조를 관리하기 위한 설정
 export class Category {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()

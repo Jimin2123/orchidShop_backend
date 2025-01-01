@@ -4,6 +4,7 @@ import { UserGrade } from 'src/common/enums/user-grade.enum';
 import { Product } from './product.entity';
 import { Category } from './categories.entity';
 import { User } from './user.entity';
+import { DiscountAppliesTo } from 'src/common/enums/product-discount-applies-to.enum';
 
 @Entity()
 export class CouponTarget {
@@ -13,8 +14,9 @@ export class CouponTarget {
   @ManyToOne(() => Coupon, (coupon) => coupon.targets, { onDelete: 'CASCADE' })
   coupon: Coupon;
 
-  @Column({ type: 'enum', enum: ['PRODUCT', 'CATEGORY', 'USER', 'GLOBAL'] })
-  appliesTo: 'PRODUCT' | 'CATEGORY' | 'USER' | 'GLOBAL';
+  // 쿠폰 적용 대상
+  @Column({ type: 'enum', enum: DiscountAppliesTo, default: DiscountAppliesTo.GLOBAL })
+  appliesTo: DiscountAppliesTo;
 
   // 특정 등급에만 사용 가능한 경우
   @Column({ type: 'enum', enum: UserGrade, nullable: true })
