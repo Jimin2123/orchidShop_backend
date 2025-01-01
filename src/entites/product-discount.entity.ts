@@ -8,7 +8,7 @@ export class ProductDiscount {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Product, (product) => product.discounts)
+  @ManyToOne(() => Product, (product) => product.discounts, { onDelete: 'CASCADE' })
   product: Product;
 
   @Column({ type: 'enum', enum: ProductDiscountType, default: ProductDiscountType.PERCENTAGE })

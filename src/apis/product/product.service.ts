@@ -60,7 +60,8 @@ export class ProductService {
     const imageEntities = files.map((file, index) =>
       this.productImagesRepository.create({
         product: savedProduct,
-        url: `uploads/images/${file.filename}`,
+        url: file.path,
+        altText: file.originalname,
         isMain: index === 0,
         order: index + 1,
       })
