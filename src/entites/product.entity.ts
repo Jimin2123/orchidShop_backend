@@ -63,7 +63,7 @@ export class Product {
   couponTargets: CouponTarget[];
 
   @ManyToOne(() => Category, (category) => category.products, { onDelete: 'SET NULL' })
-  category: Category; // 상품이 속한 카테고리
+  category: Category;
 
   @CreateDateColumn()
   createdAt: Date;
