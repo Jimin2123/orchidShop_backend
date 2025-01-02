@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
 import { CreateTagsDto } from 'src/common/dtos/product/create-tag.dto';
+import { UpdateProductDto } from 'src/common/dtos/product/update-product.dto';
 import { ProductDiscountType } from 'src/common/enums/product-discount.enum';
 import { TransactionUtil } from 'src/common/utils/transcation.util';
 import { Category } from 'src/entites/categories.entity';
@@ -13,7 +14,8 @@ import { ProductTags } from 'src/entites/product-tags.entity';
 import { ProductView } from 'src/entites/product-view.entity';
 import { Product } from 'src/entites/product.entity';
 import { Tag } from 'src/entites/tag.entity';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, QueryRunner, Repository } from 'typeorm';
+import { FileUtil } from 'src/common/utils/files.util';
 
 @Injectable()
 export class ProductService {
@@ -39,7 +41,7 @@ export class ProductService {
   ) {}
 
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
-    return await this.transactionUtil.runInTransaction(this.dataSource, async (queryRunner) => {
+    return await this.transactionUtil.runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
       const categoryRepository = queryRunner.manager.getRepository(Category);
       const category = await categoryRepository.findOne({ where: { id: createProductDto.categoryId } });
 
@@ -122,6 +124,7 @@ export class ProductService {
     });
   }
 
+  // 지금 당장은 안 쓰이는 코드인데 나중에 리팩토링하면서 사용할 수 있도록 남겨둔다.
   async uploadProductImages(body: any, files: Express.Multer.File[]): Promise<ProductImages[]> {
     const { productId } = body;
 
@@ -137,7 +140,7 @@ export class ProductService {
     const productImages = files.map((file, index) =>
       this.productImagesRepository.create({
         product,
-        url: `uploads/products/${file.filename}`,
+        url: `uploads/product-images/${file.filename}`,
         altText: file.originalname,
         isMain: index === 0, // 첫 번째 이미지를 메인으로 설정
       })
@@ -211,14 +214,185 @@ export class ProductService {
 
   async getProducts(): Promise<Product[]> {
     return await this.productRepository.find({
-      relations: ['view', 'productTags', 'images', 'priceHistories', 'discounts', 'couponTargets', 'category'],
+      relations: ['view', 'productTags', 'images', 'discounts', 'couponTargets', 'category'],
     });
   }
 
   async getProductById(id: string): Promise<Product> {
-    return await this.productRepository.findOne({
+    const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['view', 'productTags', 'images', 'priceHistories', 'discounts', 'couponTargets', 'category'],
+      relations: ['view', 'productTags', 'images', 'discounts', 'couponTargets', 'category'],
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found.`);
+    }
+
+    product.view.viewCount += 1;
+    product.view.lastViewedAt = new Date();
+    await this.productViewRepository.save(product.view);
+
+    return product;
+  }
+
+  async updateProduct(productId: string, updateData: UpdateProductDto): Promise<Product> {
+    return this.transactionUtil.runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
+      const productRepository = queryRunner.manager.getRepository(Product);
+      const productImagesRepository = queryRunner.manager.getRepository(ProductImages);
+      const product = await productRepository.findOne({
+        where: { id: productId },
+        relations: ['productTags', 'images', 'discounts', 'category', 'priceHistories'], // 'tags'를 명시적으로 포함
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${productId} not found`);
+      }
+
+      // 2. 기본 필드 업데이트
+      Object.assign(product, {
+        name: updateData.name ?? product.name,
+        description: updateData.description ?? product.description,
+        price: updateData.price ?? product.price,
+        quantity: updateData.quantity ?? product.quantity,
+        isFeatured: updateData.isFeatured ?? product.isFeatured,
+        status: updateData.status ?? product.status,
+      });
+
+      // 3. 카테고리 업데이트
+      if (updateData.categoryId) {
+        const categoryRepository = await queryRunner.manager.getRepository(Category);
+        const category = await categoryRepository.findOne({ where: { id: updateData.categoryId } });
+
+        if (!category) {
+          throw new NotFoundException(`Category with ID ${updateData.categoryId} not found.`);
+        }
+
+        product.category = category;
+      }
+
+      // 4. 이미지 삭제
+      if (updateData.removeImageIds && updateData.removeImageIds.length > 0) {
+        // 삭제할 이미지 가져오기
+        const imagesToDelete = await productImagesRepository.find({
+          where: { id: In(updateData.removeImageIds) },
+        });
+
+        if (imagesToDelete.length !== updateData.removeImageIds.length) {
+          throw new NotFoundException('Some images not found.');
+        }
+
+        if (imagesToDelete.length > 0) {
+          // 파일 삭제 처리
+          for (const image of imagesToDelete) {
+            if (image.url) {
+              await FileUtil.deleteFile(image.url); // 파일 삭제 유틸리티 호출
+            }
+          }
+          await productImagesRepository.delete({ id: In(updateData.removeImageIds) });
+        }
+      }
+
+      // 5. 이미지 수정
+      if (updateData.updateImages?.length) {
+        for (const update of updateData.updateImages) {
+          const image = await productImagesRepository.findOne({ where: { id: update.imageId } });
+          if (!image) continue;
+          Object.assign(image, {
+            altText: update.altText ?? image.altText,
+            isMain: update.isMain ?? image.isMain,
+          });
+          await productImagesRepository.save(image);
+        }
+      }
+
+      // 6. 새 이미지 추가
+      if (updateData.newImages?.length) {
+        const newImageEntities = updateData.newImages.map((imageUrl) =>
+          productImagesRepository.create({
+            product,
+            url: imageUrl,
+            altText: product.name,
+          })
+        );
+        await productImagesRepository.save(newImageEntities);
+      }
+
+      // 7. 태그 업데이트
+      if (updateData.tags) {
+        const productTagsRepository = queryRunner.manager.getRepository(ProductTags);
+        const tagRepository = queryRunner.manager.getRepository(Tag);
+
+        if (updateData.tags.addTags) {
+          const newTags = await Promise.all(
+            updateData.tags.addTags.map(async (tagId) => {
+              const tag = await tagRepository.findOne({ where: { id: tagId } });
+              if (!tag) {
+                throw new NotFoundException(`Tag with ID ${tagId} not found`);
+              }
+
+              const existingProductTag = await productTagsRepository.findOne({
+                where: { product: { id: product.id }, tag: { id: tag.id } },
+              });
+              if (existingProductTag) {
+                throw new BadRequestException(`Tag with ID ${tagId} already exists in product.`);
+              }
+
+              return productTagsRepository.create({ product, tag });
+            })
+          );
+
+          await productTagsRepository.save(newTags);
+        }
+
+        if (updateData.tags.removeTags) {
+          await Promise.all(
+            updateData.tags.removeTags.map(async (tagId) => {
+              const tag = await tagRepository.findOne({ where: { id: tagId } });
+              if (!tag) {
+                throw new NotFoundException(`Tag with ID ${tagId} not found`);
+              }
+            })
+          );
+
+          await productTagsRepository.delete({
+            product: { id: product.id }, // 명시적으로 product.id를 사용
+            tag: In(updateData.tags.removeTags),
+          });
+        }
+      }
+
+      // 8. 할인 정보 업데이트
+      if (updateData.discount) {
+        const productDiscountRepository = queryRunner.manager.getRepository(ProductDiscount);
+        await productDiscountRepository.update(
+          { product: { id: product.id }, isActive: true },
+          { isActive: false, endDate: new Date(), product: { id: product.id } }
+        );
+
+        const discount = productDiscountRepository.create({
+          ...updateData.discount,
+          product,
+        });
+        await productDiscountRepository.save(discount);
+      }
+
+      // 가격 기록 생성
+      if (product.priceHistories) {
+        const productPriceHistoryRepository = queryRunner.manager.getRepository(ProductPriceHistory);
+        const ExistingPriceHistory = product.priceHistories.find((history) => history.endDate == null);
+        if (ExistingPriceHistory) {
+          ExistingPriceHistory.endDate = new Date();
+          await productPriceHistoryRepository.save(ExistingPriceHistory);
+        }
+        const priceHistory = productPriceHistoryRepository.create({
+          product,
+          price: product.price,
+          startDate: new Date(),
+        });
+        await productPriceHistoryRepository.save(priceHistory);
+      }
+
+      return product;
     });
   }
 }
