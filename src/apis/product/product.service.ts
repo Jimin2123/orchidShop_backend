@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
+import { CreateTagsDto } from 'src/common/dtos/product/create-tag.dto';
 import { ProductDiscountType } from 'src/common/enums/product-discount.enum';
 import { runInTransaction } from 'src/common/utils/transcation.util';
 import { Category } from 'src/entites/categories.entity';
@@ -11,7 +12,8 @@ import ProductPriceHistory from 'src/entites/product-price-history.entity';
 import { ProductTags } from 'src/entites/product-tags.entity';
 import { ProductView } from 'src/entites/product-view.entity';
 import { Product } from 'src/entites/product.entity';
-import { DataSource, Repository } from 'typeorm';
+import { Tag } from 'src/entites/tag.entity';
+import { DataSource, In, Repository } from 'typeorm';
 
 @Injectable()
 export class ProductService {
@@ -30,6 +32,8 @@ export class ProductService {
     private readonly productViewRepository: Repository<ProductView>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
     private readonly dataSource: DataSource
   ) {}
 
@@ -75,6 +79,24 @@ export class ProductService {
           product: savedProduct,
         });
         await productDiscountRepository.save(discountEntity);
+      }
+
+      if (createProductDto.tagIds && createProductDto.tagIds.length > 0) {
+        const tagRepository = queryRunner.manager.getRepository(Tag);
+        const tags = await tagRepository.find({ where: { id: In(createProductDto.tagIds) } });
+
+        if (tags.length !== createProductDto.tagIds.length) {
+          throw new Error('Some tags not found.');
+        }
+
+        const productTagsRepository = queryRunner.manager.getRepository(ProductTags);
+        const productTags = tags.map((tag) =>
+          productTagsRepository.create({
+            product: savedProduct,
+            tag,
+          })
+        );
+        await productTagsRepository.save(productTags);
       }
 
       // 4. 가격 기록 생성
@@ -156,5 +178,23 @@ export class ProductService {
     }
 
     return createdCategories;
+  }
+
+  async createTags(createTagsDto: CreateTagsDto): Promise<Tag[]> {
+    const tags = createTagsDto.categories;
+
+    // 중복 태그 확인
+    const existingTags = await this.tagRepository.findBy({
+      name: In(tags.map((tag) => tag.name)), // 배열을 In 연산자로 전달
+    });
+
+    if (existingTags.length > 0) {
+      const existingNames = existingTags.map((tag) => tag.name).join(', ');
+      throw new BadRequestException(`Duplicate tags: ${existingNames}`);
+    }
+
+    // 태그 생성
+    const newTags = this.tagRepository.create(tags);
+    return await this.tagRepository.save(newTags);
   }
 }

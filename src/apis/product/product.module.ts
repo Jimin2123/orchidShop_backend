@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import ProductPriceHistory from 'src/entites/product-price-history.entity';
 import { Category } from 'src/entites/categories.entity';
 import { ProductView } from 'src/entites/product-view.entity';
+import { Tag } from 'src/entites/tag.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ProductView } from 'src/entites/product-view.entity';
       ProductPriceHistory,
       ProductView,
       Category,
+      Tag,
     ]),
   ],
   controllers: [ProductController],
