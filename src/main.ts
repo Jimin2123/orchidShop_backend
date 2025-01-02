@@ -27,7 +27,7 @@ async function bootstrap() {
   // 보안 설정
   // 1. CORS 활성화
   app.enableCors({
-    origin: ['https://your-allowed-origin.com'], // 필요한 도메인으로 변경
+    origin: true, // 모든 도메인 허용
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

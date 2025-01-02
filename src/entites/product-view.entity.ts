@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Product } from './product.entity';
 
 @Entity()
@@ -7,6 +15,7 @@ export class ProductView {
   id: string;
 
   @OneToOne(() => Product, (product) => product.view, { onDelete: 'CASCADE', lazy: true })
+  @JoinColumn()
   product: Product;
 
   @Column({ default: 0 })

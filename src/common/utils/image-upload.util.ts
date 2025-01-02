@@ -15,11 +15,11 @@ export const editFileName = (req, file, callback) => {
   callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
 };
 
-export const getStorageConfig = (destination: string) => ({
+export const getStorageConfig = (destination: string, maxSizeMB: number) => ({
   storage: diskStorage({
     destination: `./uploads/${destination}`, // 저장 경로 동적 설정
     filename: editFileName,
   }),
   fileFilter: imageFileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 기본 파일 크기 제한: 5MB
+  limits: { fileSize: maxSizeMB * 1024 * 1024 }, // 동적 파일 크기 제한 설정
 });

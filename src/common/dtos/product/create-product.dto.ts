@@ -1,54 +1,87 @@
+import { IsNotEmpty, IsString, IsNumber, IsOptional, IsArray, IsBoolean, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsString, IsNumber, IsOptional, IsArray, IsUUID, IsObject, ValidateNested } from 'class-validator';
-import { CreateDiscountDTO } from './create-product-discount.dto';
+import { DiscountDto } from './create-discount.dto';
+import { ProductStatus } from 'src/common/enums/product-status.enum';
 
-export class CreateProductDTO {
-  @ApiProperty({ description: 'Product name', example: 'Smartphone' })
+export class CreateProductDto {
+  @ApiProperty({
+    description: '제품 이름',
+    example: 'iPhone 14',
+  })
+  @IsNotEmpty()
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'Product description', example: 'A high-end smartphone' })
+  @ApiProperty({
+    description: '제품 설명',
+    example: 'Latest Apple smartphone with A16 chip.',
+  })
+  @IsNotEmpty()
   @IsString()
   description: string;
 
-  @ApiProperty({ description: 'Product price', example: 999.99 })
+  @ApiProperty({
+    description: '제품 가격',
+    example: 999.99,
+  })
+  @IsNotEmpty()
   @IsNumber()
   price: number;
 
-  @ApiProperty({ description: 'Product quantity', example: 100 })
+  @ApiProperty({
+    description: '제품 재고 수량',
+    example: 50,
+  })
+  @IsNotEmpty()
   @IsNumber()
   quantity: number;
 
-  @ApiProperty({ description: 'Category ID', example: 'category-id' })
-  @IsUUID()
-  @IsOptional()
+  @ApiProperty({
+    description: '카테고리 ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @IsNotEmpty()
+  @IsString()
   categoryId: string;
-}
-
-export class CreateFullProductDTO {
-  @ApiProperty({ description: 'Product details' })
-  @IsObject()
-  @ValidateNested()
-  @Type(() => CreateProductDTO)
-  product: CreateProductDTO;
-
-  @ApiProperty({ description: 'Discounts for the product', type: [CreateDiscountDTO] })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateDiscountDTO)
-  discounts: CreateDiscountDTO[];
-
-  @ApiProperty({ description: 'Tag IDs associated with the product', type: [String] })
-  @IsArray()
-  @IsString({ each: true })
-  tags: string[];
 
   @ApiProperty({
-    description: 'Image files',
-    type: 'string',
-    format: 'binary',
-    isArray: true,
+    description: '제품 상태 (예: ACTIVE, INACTIVE)',
+    example: 'ACTIVE',
   })
-  images: any[];
+  @IsNotEmpty()
+  @IsEnum(ProductStatus)
+  status: ProductStatus;
+
+  @ApiProperty({
+    description: '추천 제품 여부',
+    required: false,
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isFeatured?: boolean;
+
+  @ApiProperty({
+    description: '연결할 태그 ID 배열',
+    type: [String],
+    required: false,
+    example: ['tag1', 'tag2'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tagIds?: string[];
+
+  @ApiProperty({})
+  @IsArray()
+  @IsOptional()
+  files?: string[];
+
+  @ApiProperty({
+    description: '할인 정보 (선택)',
+    required: false,
+    type: DiscountDto,
+  })
+  @IsOptional()
+  discount?: DiscountDto;
 }

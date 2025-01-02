@@ -12,7 +12,7 @@ export function UploadImage(fieldName: string, destination: string, maxSizeMB = 
   return applyDecorators(
     UseInterceptors(
       FileInterceptor(fieldName, {
-        ...getStorageConfig(destination),
+        ...getStorageConfig(destination, maxSizeMB),
         limits: { fileSize: maxSizeMB * 1024 * 1024 }, // 최대 파일 크기 제한
       })
     )
@@ -30,7 +30,7 @@ export function UploadImages(fieldName: string, destination: string, maxSizeMB =
   return applyDecorators(
     UseInterceptors(
       FilesInterceptor(fieldName, maxFiles, {
-        ...getStorageConfig(destination),
+        ...getStorageConfig(destination, maxSizeMB),
         limits: { fileSize: maxSizeMB * 1024 * 1024 }, // 최대 파일 크기 제한
       })
     )
