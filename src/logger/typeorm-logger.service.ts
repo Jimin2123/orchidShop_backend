@@ -1,9 +1,8 @@
 import { Logger } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import * as winston from 'winston';
-import * as winstonDaily from 'winston-daily-rotate-file';
 import { ClsServiceManager } from 'nestjs-cls';
-import { dailyOptions, fileFormat } from 'src/configs/typeORM-winston.config';
+import { typeOrmLogger } from 'src/configs/typeORM-winston.config';
 
 // 로그에서 제외될 쿼리 목록
 const ignoredQueries = [
@@ -21,23 +20,16 @@ export class TypeOrmLogger implements Logger {
   private readonly logger: winston.Logger;
 
   constructor() {
-    this.logger = winston.createLogger({
-      level: 'debug',
-      format: fileFormat,
-      transports: [
-        new winstonDaily(dailyOptions('info')),
-        new winstonDaily(dailyOptions('warn')),
-        new winstonDaily(dailyOptions('error')),
-      ],
-    });
+    this.logger = typeOrmLogger;
   }
 
-  private getClsContext() {
+  private getClsContext(additionalFields = {}): Record<string, any> {
     const clsService = ClsServiceManager.getClsService();
     return {
       traceId: clsService?.get('traceId'),
       userId: clsService?.get('userId'),
       userRole: clsService?.get('userRole'),
+      ...additionalFields, // 외부에서 추가 필드 주입
     };
   }
 
@@ -46,7 +38,9 @@ export class TypeOrmLogger implements Logger {
     try {
       return callback();
     } catch (error) {
-      console.error(`${fallbackMessage}:`, error);
+      this.logger.error(`${fallbackMessage}: ${error.message}`, {
+        stack: error.stack,
+      });
     }
   }
 
@@ -63,7 +57,9 @@ export class TypeOrmLogger implements Logger {
       const elapsedTime = this.calculateElapsedTime(startTime);
 
       // Parameters 처리
-      const formattedParameters = parameters ? JSON.stringify(parameters) : 'N/A';
+      const formattedParameters = parameters
+        ? JSON.stringify(parameters).slice(0, 1000) + (JSON.stringify(parameters).length > 1000 ? '...' : '')
+        : 'N/A';
 
       this.logger.log(logLevel, `Query executed: ${query} - Parameters: ${formattedParameters}`, {
         elapsedTime,
