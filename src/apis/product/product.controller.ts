@@ -1,4 +1,14 @@
-import { BadRequestException, Body, Controller, Delete, Param, Post, UploadedFiles, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UploadedFiles,
+  UseGuards,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
 import { UploadImages } from 'src/common/decorators/image-upload.decorator';
@@ -55,5 +65,15 @@ export class ProductController {
   @Delete(':id')
   async deleteProduct(@Param('id') id: string) {
     return await this.productService.deleteProduct(id);
+  }
+
+  @Get()
+  async getProducts() {
+    return await this.productService.getProducts();
+  }
+
+  @Get(':id')
+  async getProduct(@Param('id') id: string) {
+    return await this.productService.getProductById(id);
   }
 }
