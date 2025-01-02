@@ -9,6 +9,7 @@ import { ContextMiddleware } from './pipes/middlewares/context.middleware';
 import { CustomWinstonModule } from './logger/logger.module';
 import { LoggingMiddleware } from './pipes/middlewares/logging.middleware';
 import { TypeOrmLogger } from './logger/typeorm-logger.service';
+import { ProductModule } from './apis/product/product.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TypeOrmLogger } from './logger/typeorm-logger.service';
     }),
     AuthModule,
     UserModule,
+    ProductModule,
   ],
   controllers: [],
   providers: [],

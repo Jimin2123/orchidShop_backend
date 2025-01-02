@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { UpdateUserDto } from '../dtos/user/updateUser.dto';
 import { User } from 'src/entites/user.entity';
 
@@ -58,7 +58,6 @@ export function SwaggerUploadImage() {
 
 export function SwaggerUpdateUser() {
   return applyDecorators(
-    ApiTags('user'),
     ApiOperation({
       summary: '사용자 정보 업데이트',
       description: '사용자의 이름, 닉네임, 전화번호, 주소 등 사용자 정보를 업데이트합니다.',

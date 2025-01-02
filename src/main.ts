@@ -18,16 +18,16 @@ async function bootstrap() {
   // 유효성 검사 파이프 설정
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true, // DTO로 변환 활성화
-      whitelist: true, // DTO에 정의되지 않은 속성 제거
-      forbidNonWhitelisted: true, // 정의되지 않은 속성이 있으면 에러 반환
+      whitelist: true, // DTO에 정의되지 않은 값 제거
+      forbidNonWhitelisted: true, // DTO에 없는 값 전달 시 에러
+      transform: true, // JSON 데이터를 DTO로 자동 변환
     })
   );
 
   // 보안 설정
   // 1. CORS 활성화
   app.enableCors({
-    origin: ['https://your-allowed-origin.com'], // 필요한 도메인으로 변경
+    origin: true, // 모든 도메인 허용
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
