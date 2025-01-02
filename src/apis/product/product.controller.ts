@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Post, UploadedFiles, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post, UploadedFiles, Delete, Param } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
 import { UploadImages } from 'src/common/decorators/image-upload.decorator';
@@ -50,5 +51,10 @@ export class ProductController {
   @Roles(UserRole.ADMIN)
   async createTags(@Body() createTagsDto: CreateTagsDto) {
     return await this.productService.createTags(createTagsDto);
+  }
+
+  @Delete(':id')
+  async deleteProduct(@Param('id') id: string) {
+    return await this.productService.deleteProduct(id);
   }
 }
