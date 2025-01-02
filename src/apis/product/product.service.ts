@@ -208,4 +208,17 @@ export class ProductService {
 
     await this.productRepository.remove(product);
   }
+
+  async getProducts(): Promise<Product[]> {
+    return await this.productRepository.find({
+      relations: ['view', 'productTags', 'images', 'priceHistories', 'discounts', 'couponTargets', 'category'],
+    });
+  }
+
+  async getProductById(id: string): Promise<Product> {
+    return await this.productRepository.findOne({
+      where: { id },
+      relations: ['view', 'productTags', 'images', 'priceHistories', 'discounts', 'couponTargets', 'category'],
+    });
+  }
 }
