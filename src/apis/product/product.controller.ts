@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Post, UploadedFiles, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Param, Post, UploadedFiles, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
 import { UploadImages } from 'src/common/decorators/image-upload.decorator';
