@@ -211,14 +211,24 @@ export class ProductService {
 
   async getProducts(): Promise<Product[]> {
     return await this.productRepository.find({
-      relations: ['view', 'productTags', 'images', 'priceHistories', 'discounts', 'couponTargets', 'category'],
+      relations: ['view', 'productTags', 'images', 'discounts', 'couponTargets', 'category'],
     });
   }
 
   async getProductById(id: string): Promise<Product> {
-    return await this.productRepository.findOne({
+    const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['view', 'productTags', 'images', 'priceHistories', 'discounts', 'couponTargets', 'category'],
+      relations: ['view', 'productTags', 'images', 'discounts', 'couponTargets', 'category'],
     });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found.`);
+    }
+
+    product.view.viewCount += 1;
+    product.view.lastViewedAt = new Date();
+    await this.productViewRepository.save(product.view);
+
+    return product;
   }
 }
