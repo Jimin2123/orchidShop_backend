@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
@@ -196,5 +196,15 @@ export class ProductService {
     // 태그 생성
     const newTags = this.tagRepository.create(tags);
     return await this.tagRepository.save(newTags);
+  }
+
+  async deleteProduct(id: string): Promise<void> {
+    const product = await this.productRepository.findOne({ where: { id } });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found.`);
+    }
+
+    await this.productRepository.remove(product);
   }
 }
