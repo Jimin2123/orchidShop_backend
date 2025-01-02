@@ -11,10 +11,10 @@ import { randomUUID } from 'crypto';
 import { UpdateUserWithDTOs } from 'src/common/dtos/user/updateUser.dto';
 import { LocalAccount } from 'src/entites/local-account.entity';
 import { hashPassword } from 'src/common/utils/hash.util';
-import { runInTransaction } from 'src/common/utils/transcation.util';
 import { UpdateAddressDto } from 'src/common/dtos/user/updateAddress.dto';
 import { CustomWinstonLogger } from 'src/logger/logger.service';
 import { GetMethodName } from 'src/common/decorators/get-mehtod-name.decorator';
+import { TransactionUtil } from 'src/common/utils/transcation.util';
 
 @Injectable()
 export class UserService {
@@ -27,6 +27,7 @@ export class UserService {
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
     private readonly dataSource: DataSource,
+    private readonly transactionUtil: TransactionUtil,
     private readonly logger: CustomWinstonLogger
   ) {}
 
@@ -52,7 +53,7 @@ export class UserService {
 
   @GetMethodName()
   async updateUser(userId: string, updateUserDto: UpdateUserWithDTOs): Promise<User> {
-    return await runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
+    return await this.transactionUtil.runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
       this.logger.log(`트랜잭션 활성화`, this.methodName);
       const userRepository = queryRunner.manager.getRepository(User);
       const addressRepository = queryRunner.manager.getRepository(Address);

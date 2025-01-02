@@ -5,12 +5,12 @@ import { LocalAccount } from 'src/entites/local-account.entity';
 import { DataSource, MoreThan, QueryRunner, Repository } from 'typeorm';
 import { RefreshToken } from 'src/entites/refresh-token.entity';
 import { comparePassword, hashPassword } from 'src/common/utils/hash.util';
-import { runInTransaction } from 'src/common/utils/transcation.util';
 import { LocalAccountDto, SignUpDto, SocialRequest } from 'src/common/dtos/authentication/createLocalAccount.dto';
 import { User } from 'src/entites/user.entity';
 import { TokenPayload, Tokens, TokenService } from './token.service';
 import { SocialAccount } from 'src/entites/social-account.entity';
 import { Address } from 'src/entites/address.entity';
+import { TransactionUtil } from 'src/common/utils/transcation.util';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +24,8 @@ export class AuthService {
     private readonly socialAccountRepository: Repository<SocialAccount>,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+    private readonly transactionUtil: TransactionUtil
   ) {}
 
   async signup(signUpDto: SignUpDto): Promise<User> {
@@ -47,7 +48,7 @@ export class AuthService {
     const hashedPassword = await hashPassword(password);
 
     // 트랜잭션 실행
-    const savedUser = await runInTransaction(this.dataSource, async (queryRunner) => {
+    const savedUser = await this.transactionUtil.runInTransaction(this.dataSource, async (queryRunner) => {
       const userRepository = queryRunner.manager.getRepository(User);
       const addressRepository = queryRunner.manager.getRepository(Address);
       const localAccountRepository = queryRunner.manager.getRepository(LocalAccount);
@@ -295,15 +296,18 @@ export class AuthService {
     });
 
     if (!existingUser) {
-      const savedUser = await runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
-        const createdUser = this.userService.createSocialUser(req);
-        const savedUser = await queryRunner.manager.save(createdUser);
+      const savedUser = await this.transactionUtil.runInTransaction(
+        this.dataSource,
+        async (queryRunner: QueryRunner) => {
+          const createdUser = this.userService.createSocialUser(req);
+          const savedUser = await queryRunner.manager.save(createdUser);
 
-        const createdSocialAccount = this.socialAccountRepository.create({ user: createdUser, ...req.user });
-        await queryRunner.manager.save(createdSocialAccount);
+          const createdSocialAccount = this.socialAccountRepository.create({ user: createdUser, ...req.user });
+          await queryRunner.manager.save(createdSocialAccount);
 
-        return savedUser;
-      });
+          return savedUser;
+        }
+      );
       const token = await this.generateTokens(savedUser);
       return { isNewUser: true, token };
     } else {

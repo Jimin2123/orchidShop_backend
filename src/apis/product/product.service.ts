@@ -4,7 +4,7 @@ import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
 import { CreateTagsDto } from 'src/common/dtos/product/create-tag.dto';
 import { ProductDiscountType } from 'src/common/enums/product-discount.enum';
-import { runInTransaction } from 'src/common/utils/transcation.util';
+import { TransactionUtil } from 'src/common/utils/transcation.util';
 import { Category } from 'src/entites/categories.entity';
 import { ProductDiscount } from 'src/entites/product-discount.entity';
 import { ProductImages } from 'src/entites/product-images.entity';
@@ -34,11 +34,12 @@ export class ProductService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+    private readonly transactionUtil: TransactionUtil
   ) {}
 
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
-    return await runInTransaction(this.dataSource, async (queryRunner) => {
+    return await this.transactionUtil.runInTransaction(this.dataSource, async (queryRunner) => {
       const categoryRepository = queryRunner.manager.getRepository(Category);
       const category = await categoryRepository.findOne({ where: { id: createProductDto.categoryId } });
 

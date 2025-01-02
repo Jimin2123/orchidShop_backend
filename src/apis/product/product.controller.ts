@@ -16,16 +16,16 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.ADMIN)
   async createProduct(@Body() createProductDto: CreateProductDto) {
     console.log(createProductDto);
     return await this.productService.createProduct(createProductDto);
   }
 
   @Post('upload-images')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.ADMIN)
   @UploadImages('files', 'product-images', 10, 10) // 다중 이미지 업로드 처리
   async uploadImages(@UploadedFiles() files: Express.Multer.File[]) {
     if (!files || files.length === 0) {
@@ -39,8 +39,8 @@ export class ProductController {
   }
 
   @Post('category')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.ADMIN)
   async createCategories(@Body() createCategoriesDto: CreateCategoriesDto) {
     return await this.productService.createCategories(createCategoriesDto);
   }
