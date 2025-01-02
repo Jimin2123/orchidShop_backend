@@ -57,7 +57,9 @@ export class TypeOrmLogger implements Logger {
       const elapsedTime = this.calculateElapsedTime(startTime);
 
       // Parameters 처리
-      const formattedParameters = parameters ? JSON.stringify(parameters) : 'N/A';
+      const formattedParameters = parameters
+        ? JSON.stringify(parameters).slice(0, 1000) + (JSON.stringify(parameters).length > 1000 ? '...' : '')
+        : 'N/A';
 
       this.logger.log(logLevel, `Query executed: ${query} - Parameters: ${formattedParameters}`, {
         elapsedTime,

@@ -39,8 +39,8 @@ export class ProductController {
   }
 
   @Post('category')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async createCategories(@Body() createCategoriesDto: CreateCategoriesDto) {
     return await this.productService.createCategories(createCategoriesDto);
   }
