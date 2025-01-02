@@ -13,6 +13,9 @@ import { RefreshToken } from './refresh-token.entity';
 import { SocialAccount } from './social-account.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { Gender } from 'src/common/enums/gender.enum';
+import { UserGrade } from 'src/common/enums/user-grade.enum';
+import { CouponTarget } from './coupon-target.entity';
+import { Orders } from './orders.entity';
 
 @Entity()
 export class User {
@@ -43,6 +46,9 @@ export class User {
   @Column({ nullable: true })
   profileImage: string;
 
+  @Column({ type: 'enum', enum: UserGrade, default: UserGrade.BRONZE })
+  grade: UserGrade; // 사용자 등급
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -57,6 +63,12 @@ export class User {
 
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
+
+  @OneToMany(() => CouponTarget, (couponTarget) => couponTarget.user)
+  couponTargets: CouponTarget[];
+
+  @OneToMany(() => Orders, (order) => order.user)
+  orders: Orders[];
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshToken: RefreshToken;

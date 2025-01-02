@@ -1,5 +1,5 @@
 import { applyDecorators, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { getStorageConfig } from '../utils/image-upload.util';
 
 /**
@@ -12,7 +12,25 @@ export function UploadImage(fieldName: string, destination: string, maxSizeMB = 
   return applyDecorators(
     UseInterceptors(
       FileInterceptor(fieldName, {
-        ...getStorageConfig(destination),
+        ...getStorageConfig(destination, maxSizeMB),
+        limits: { fileSize: maxSizeMB * 1024 * 1024 }, // 최대 파일 크기 제한
+      })
+    )
+  );
+}
+
+/**
+ * 다중 이미지 업로드 데코레이터
+ * @param fieldName 업로드할 파일 필드명
+ * @param destination 이미지 저장 경로
+ * @param maxSizeMB 최대 파일 크기 (MB)
+ * @param maxFiles 최대 업로드 파일 수
+ */
+export function UploadImages(fieldName: string, destination: string, maxSizeMB = 5, maxFiles = 10) {
+  return applyDecorators(
+    UseInterceptors(
+      FilesInterceptor(fieldName, maxFiles, {
+        ...getStorageConfig(destination, maxSizeMB),
         limits: { fileSize: maxSizeMB * 1024 * 1024 }, // 최대 파일 크기 제한
       })
     )
