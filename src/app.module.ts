@@ -10,6 +10,7 @@ import { CustomWinstonModule } from './logger/logger.module';
 import { LoggingMiddleware } from './pipes/middlewares/logging.middleware';
 import { TypeOrmLogger } from './logger/typeorm-logger.service';
 import { ProductModule } from './apis/product/product.module';
+import { UploaderModule } from './apis/uploader/uploader.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ProductModule } from './apis/product/product.module';
     AuthModule,
     UserModule,
     ProductModule,
+    UploaderModule,
   ],
   controllers: [],
   providers: [],
