@@ -9,14 +9,7 @@ import { getStorageConfig } from '../utils/image-upload.util';
  * @param maxSizeMB 최대 파일 크기 (MB)
  */
 export function UploadImage(fieldName: string, destination: string, maxSizeMB = 5) {
-  return applyDecorators(
-    UseInterceptors(
-      FileInterceptor(fieldName, {
-        ...getStorageConfig(destination, maxSizeMB),
-        limits: { fileSize: maxSizeMB * 1024 * 1024 }, // 최대 파일 크기 제한
-      })
-    )
-  );
+  return applyDecorators(UseInterceptors(FileInterceptor(fieldName, getStorageConfig(destination, maxSizeMB))));
 }
 
 /**
@@ -28,11 +21,6 @@ export function UploadImage(fieldName: string, destination: string, maxSizeMB = 
  */
 export function UploadImages(fieldName: string, destination: string, maxSizeMB = 5, maxFiles = 10) {
   return applyDecorators(
-    UseInterceptors(
-      FilesInterceptor(fieldName, maxFiles, {
-        ...getStorageConfig(destination, maxSizeMB),
-        limits: { fileSize: maxSizeMB * 1024 * 1024 }, // 최대 파일 크기 제한
-      })
-    )
+    UseInterceptors(FilesInterceptor(fieldName, maxFiles, getStorageConfig(destination, maxSizeMB)))
   );
 }

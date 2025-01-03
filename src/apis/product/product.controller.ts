@@ -36,21 +36,6 @@ export class ProductController {
     return await this.productService.createProduct(createProductDto);
   }
 
-  @Post('upload-images')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
-  @UploadImages('files', 'product-images', 10, 10) // 다중 이미지 업로드 처리
-  async uploadImages(@UploadedFiles() files: Express.Multer.File[]) {
-    if (!files || files.length === 0) {
-      throw new BadRequestException('No files uploaded.');
-    }
-    const fileUrls = files.map((file) => `uploads/product-images/${file.filename}`);
-    return {
-      message: 'Images uploaded successfully',
-      fileUrls,
-    };
-  }
-
   @Post('category')
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(UserRole.ADMIN)
