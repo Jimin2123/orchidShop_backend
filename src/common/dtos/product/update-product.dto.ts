@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProductStatus } from 'src/common/enums/product-status.enum';
 import { UpdateDiscountDto } from './update-discount.dto';
 import { Type } from 'class-transformer';
-import { UpdateTagsDto } from './update-product-tags.dto';
+import { UpdateProductTagsDto } from './update-product-tags.dto';
 import { UpdateProductImageDto } from './updpate-product-images.dto';
 
 export class UpdateProductDto {
@@ -60,11 +60,11 @@ export class UpdateProductDto {
   @IsOptional()
   newImages?: string[];
 
-  @ApiProperty({ description: '태그 정보', required: false, type: UpdateTagsDto })
+  @ApiProperty({ description: '태그 정보', required: false, type: UpdateProductTagsDto })
   @IsOptional()
   @ValidateNested()
-  @Type(() => UpdateTagsDto)
-  tags?: UpdateTagsDto;
+  @Type(() => UpdateProductTagsDto)
+  tags?: UpdateProductTagsDto;
 
   @ApiProperty({ description: '할인 정보', required: false, type: UpdateDiscountDto })
   @IsOptional()

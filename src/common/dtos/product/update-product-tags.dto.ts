@@ -1,7 +1,7 @@
 import { IsArray, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateTagsDto {
+export class UpdateProductTagsDto {
   @ApiProperty({ description: '추가할 태그 ID 목록', type: [String], required: false })
   @IsOptional()
   @IsArray()
