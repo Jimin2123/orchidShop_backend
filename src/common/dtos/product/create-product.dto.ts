@@ -72,10 +72,10 @@ export class CreateProductDto {
   @IsString({ each: true })
   tagIds?: string[];
 
-  @ApiProperty({})
+  @ApiProperty({ description: '제품 이미지 파일 배열', required: false })
   @IsArray()
   @IsOptional()
-  files?: string[];
+  productImages?: Express.Multer.File[];
 
   @ApiProperty({
     description: '할인 정보 (선택)',

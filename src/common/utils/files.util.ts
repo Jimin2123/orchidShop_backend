@@ -17,6 +17,14 @@ export class FileUtil {
   }
 
   /**
+   * 여러 파일 삭제 유틸리티
+   * @param filePaths - 삭제할 파일 경로 목록
+   */
+  static async deleteFiles(filePaths: string[]): Promise<void> {
+    await Promise.all(filePaths.map((filePath) => this.deleteFile(filePath)));
+  }
+
+  /**
    * 파일 읽기 유틸리티
    * @param filePath - 읽을 파일의 경로
    * @returns 파일 내용

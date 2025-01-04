@@ -6,7 +6,11 @@ import { DataSource, QueryRunner } from 'typeorm';
 export class TransactionUtil {
   constructor(private readonly logger: TypeOrmLogger) {}
 
-  async runInTransaction<T>(dataSource: DataSource, work: (queryRunner: QueryRunner) => Promise<T>): Promise<T> {
+  async runInTransaction<T>(
+    dataSource: DataSource,
+    work: (queryRunner: QueryRunner) => Promise<T>,
+    onRollback?: (error: any) => Promise<void> // 롤백 시 실행할 콜백 함수 추가
+  ): Promise<T> {
     const queryRunner = dataSource.createQueryRunner();
 
     try {
@@ -45,6 +49,10 @@ export class TransactionUtil {
           `트랜잭션 롤백 실행됨. QueryRunner 상태: isTransactionActive=${queryRunner.isTransactionActive}`,
           []
         );
+
+        // 롤백 시 콜백 함수 호출
+        if (onRollback) await onRollback(error);
+
         throw new Error(`트랜잭션 실패: ${error.message}`);
       }
     } catch (connectError) {

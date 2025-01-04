@@ -27,7 +27,7 @@ export class DiscountDto {
   })
   @ValidateIf((o) => o.type === ProductDiscountType.FIXED_AMOUNT)
   @IsNumber()
-  value?: number;
+  fixedAmount?: number;
 
   @ApiProperty({
     description: '할인 시작일',

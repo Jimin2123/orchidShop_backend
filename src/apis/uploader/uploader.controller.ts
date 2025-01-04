@@ -13,17 +13,14 @@ import { RolesGuard } from 'src/guards/role.guard';
 export class UploaderController {
   constructor(private readonly uploaderService: UploaderService) {}
 
-  @Post('upload-product-images')
+  @Post('images/product')
   @Roles(UserRole.ADMIN)
-  @UploadImages('files', 'product-images', 10, 10)
+  @UploadImages('productImages', 'product-images', 10, 10)
   async uploadImages(@UploadedFiles() productImages: Express.Multer.File[]) {
-    if (!productImages || productImages.length === 0) {
-      throw new BadRequestException('No files uploaded.');
-    }
-    return productImages;
+    return this.uploaderService.uploadProductImages(productImages);
   }
 
-  @Post('upload-profile-image')
+  @Post('image/profile')
   @UploadImage('profileImage', 'profile-images', 2)
   @SwaggerUploadImage()
   async uploadProfileImage(@CurrentUser() userId: string, @UploadedFiles() profileImage: Express.Multer.File) {

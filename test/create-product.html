@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -14,28 +14,16 @@
       <input type="text" id="name" name="name" required /><br /><br />
 
       <label for="description">Description:</label><br />
-      <textarea id="description" name="description" required></textarea
-      ><br /><br />
+      <textarea id="description" name="description" required></textarea><br /><br />
 
       <label for="price">Price:</label><br />
-      <input
-        type="number"
-        step="0.01"
-        id="price"
-        name="price"
-        required
-      /><br /><br />
+      <input type="number" step="0.01" id="price" name="price" required /><br /><br />
 
       <label for="quantity">Quantity:</label><br />
       <input type="number" id="quantity" name="quantity" required /><br /><br />
 
       <label for="categoryId">Category ID:</label><br />
-      <input
-        type="text"
-        id="categoryId"
-        name="categoryId"
-        required
-      /><br /><br />
+      <input type="text" id="categoryId" name="categoryId" required /><br /><br />
 
       <label for="status">Status:</label><br />
       <select id="status" name="status" required>
@@ -57,35 +45,16 @@
       ><br /><br />
 
       <label for="discountRate">Discount Rate (for PERCENTAGE):</label><br />
-      <input
-        type="number"
-        step="0.01"
-        id="discountRate"
-        name="discountRate"
-      /><br /><br />
+      <input type="number" step="0.01" id="discountRate" name="discountRate" /><br /><br />
 
-      <label for="discountValue">Discount Value (for FIXED_AMOUNT):</label
-      ><br />
-      <input
-        type="number"
-        step="0.01"
-        id="discountValue"
-        name="discountValue"
-      /><br /><br />
+      <label for="discountValue">Discount Value (for FIXED_AMOUNT):</label><br />
+      <input type="number" step="0.01" id="discountValue" name="discountValue" /><br /><br />
 
       <label for="discountStartDate">Start Date:</label><br />
-      <input
-        type="datetime-local"
-        id="discountStartDate"
-        name="discountStartDate"
-      /><br /><br />
+      <input type="datetime-local" id="discountStartDate" name="discountStartDate" /><br /><br />
 
       <label for="discountEndDate">End Date:</label><br />
-      <input
-        type="datetime-local"
-        id="discountEndDate"
-        name="discountEndDate"
-      /><br /><br />
+      <input type="datetime-local" id="discountEndDate" name="discountEndDate" /><br /><br />
 
       <label for="discountAppliesTo">Applies To:</label><br />
       <select id="discountAppliesTo" name="discountAppliesTo" required>
@@ -99,11 +68,7 @@
       ><br /><br />
 
       <label for="discountIsActive">Is Active:</label><br />
-      <input
-        type="checkbox"
-        id="discountIsActive"
-        name="discountIsActive"
-      /><br /><br />
+      <input type="checkbox" id="discountIsActive" name="discountIsActive" /><br /><br />
 
       <h2>Upload Images</h2>
       <label for="files">Upload Images:</label><br />
@@ -115,47 +80,39 @@
     <script>
       async function uploadImages(files) {
         const formData = new FormData();
+        if (files.length === 0) {
+          return;
+        }
         for (let i = 0; i < files.length; i++) {
-          formData.append("files", files[i]);
+          formData.append('productImages', files[i]);
         }
 
         try {
-          const response = await axios.post(
-            "http://localhost:3000/product/upload-images",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-          return response.data.fileUrls; // Return uploaded file URLs
+          const response = await axios.post('http://localhost:3000/uploader/images/product', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          return response.data;
         } catch (error) {
-          console.error(
-            "Error during image upload:",
-            error.response?.data || error.message
-          );
-          throw new Error("Failed to upload images.");
+          console.error('Error during image upload:', error.response?.data || error.message);
+          throw new Error('Failed to upload images.');
         }
       }
 
       async function submitProduct() {
-        const form = document.getElementById("productForm");
+        const form = document.getElementById('productForm');
         const files = form.files.files;
 
         try {
           // Step 1: Upload images
-          const fileUrls = await uploadImages(files);
+          const productImages = await uploadImages(files);
 
           // Step 2: Create product with uploaded file URLs
           const discount = {
             type: form.discountType.value,
-            discountRate: form.discountRate.value
-              ? parseFloat(form.discountRate.value)
-              : null,
-            value: form.discountValue.value
-              ? parseFloat(form.discountValue.value)
-              : null,
+            discountRate: form.discountRate.value ? parseFloat(form.discountRate.value) : null,
+            value: form.discountValue.value ? parseFloat(form.discountValue.value) : null,
             startDate: form.discountStartDate.value || null,
             endDate: form.discountEndDate.value || null,
             isActive: form.discountIsActive.checked,
@@ -170,23 +127,17 @@
             categoryId: form.categoryId.value,
             status: form.status.value,
             isFeatured: form.isFeatured.checked,
-            tagIds: form.tagIds.value.split(","),
+            tagIds: form.tagIds.value.split(','),
             discount,
-            files: fileUrls, // Use uploaded file URLs
+            productImages,
           };
 
-          const response = await axios.post(
-            "http://localhost:3000/product",
-            productData
-          );
-          console.log("Product created:", response.data);
-          alert("Product created successfully!");
+          const response = await axios.post('http://localhost:3000/product', productData);
+          console.log('Product created:', response.data);
+          alert('Product created successfully!');
         } catch (error) {
-          console.error(
-            "Error during product creation:",
-            error.response?.data || error.message
-          );
-          alert("Failed to create product. Check console for details.");
+          console.error('Error during product creation:', error.response?.data || error.message);
+          alert('Failed to create product. Check console for details.');
         }
       }
     </script>

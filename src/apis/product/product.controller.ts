@@ -1,19 +1,6 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  NotFoundException,
-  Param,
-  Patch,
-  Post,
-  UploadedFiles,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
-import { UploadImages } from 'src/common/decorators/image-upload.decorator';
 import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto';
 import { CreateTagsDto } from 'src/common/dtos/product/create-tag.dto';
 import { JwtAuthGuard } from 'src/guards/jwt.guard';
@@ -29,23 +16,22 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async createProduct(@Body() createProductDto: CreateProductDto) {
-    console.log(createProductDto);
     return await this.productService.createProduct(createProductDto);
   }
 
   @Post('category')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async createCategories(@Body() createCategoriesDto: CreateCategoriesDto) {
     return await this.productService.createCategories(createCategoriesDto);
   }
 
   @Post('tag')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async createTags(@Body() createTagsDto: CreateTagsDto) {
     return await this.productService.createTags(createTagsDto);
   }
@@ -66,8 +52,8 @@ export class ProductController {
   }
 
   @Patch(':id')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async updateProduct(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     // 요청 데이터와 업로드된 파일을 서비스로 전달
     const updatedProduct = await this.productService.updateProduct(id, updateProductDto);
