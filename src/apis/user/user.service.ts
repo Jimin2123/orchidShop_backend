@@ -5,7 +5,6 @@ import { CreateUserDto } from 'src/common/dtos/user/createUser.dto';
 import { Address } from 'src/entites/address.entity';
 import { User } from 'src/entites/user.entity';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
-import * as fs from 'fs';
 import { SocialRequest } from 'src/common/dtos/authentication/createLocalAccount.dto';
 import { randomUUID } from 'crypto';
 import { UpdateUserWithDTOs } from 'src/common/dtos/user/updateUser.dto';
@@ -15,6 +14,7 @@ import { UpdateAddressDto } from 'src/common/dtos/user/updateAddress.dto';
 import { CustomWinstonLogger } from 'src/logger/logger.service';
 import { GetMethodName } from 'src/common/decorators/get-mehtod-name.decorator';
 import { TransactionUtil } from 'src/common/utils/transcation.util';
+import { FileUtil } from 'src/common/utils/files.util';
 
 @Injectable()
 export class UserService {
@@ -145,9 +145,7 @@ export class UserService {
     // 2. 기존 이미지 삭제
     if (user.profileImage) {
       const filePath = user.profileImage;
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath); // 파일 삭제
-      }
+      await FileUtil.deleteFile(filePath); // FileUtil을 사용하여 파일 삭제
     }
 
     // 3. 새로운 이미지 경로 저장

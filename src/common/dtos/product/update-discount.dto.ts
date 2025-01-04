@@ -17,7 +17,7 @@ export class UpdateDiscountDto {
   @ApiProperty({ description: '할인 금액 (FIXED일 경우 필수)', required: false })
   @IsOptional()
   @IsNumber()
-  value?: number;
+  fixedAmount: number;
 
   @ApiProperty({ description: '할인 시작일', required: false })
   @IsOptional()
