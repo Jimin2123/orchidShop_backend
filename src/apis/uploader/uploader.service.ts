@@ -13,7 +13,8 @@ export class UploaderService {
     return productImages;
   }
 
-  async uploadProfileImage(userId: string, imagePath: string) {
+  async uploadProfileImage(userId: string, profileImage: Express.Multer.File): Promise<void> {
+    const imagePath = profileImage ? profileImage.path : null;
     await this.userService.updateProfileImage(userId, imagePath);
   }
 }

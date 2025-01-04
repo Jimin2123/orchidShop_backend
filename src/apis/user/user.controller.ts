@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Param, Post, Put, UploadedFile, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UploadImage } from 'src/common/decorators/image-upload.decorator';
 import { CurrentUser, CurrentUserRole } from 'src/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt.guard';
-import { SwaggerGetProfile, SwaggerUpdateUser, SwaggerUploadImage } from 'src/common/swaggers/user.swagger';
+import { SwaggerGetProfile, SwaggerUpdateUser } from 'src/common/swaggers/user.swagger';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { RolesGuard } from 'src/guards/role.guard';
@@ -48,13 +47,5 @@ export class UserController {
   async updateUser(@CurrentUser() userId: string, @Body() updateUserDto: UpdateUserWithDTOs) {
     this.logger.log(`사용자 정보 수정 API 활성화`, this.contextName);
     return await this.userService.updateUser(userId, updateUserDto);
-  }
-
-  @Post('upload-image')
-  @UploadImage('profileImage', 'profile-images', 2) // 프로필 이미지 업로드 (2MB 제한)
-  @SwaggerUploadImage()
-  async uploadImage(@CurrentUser() userId: string, @UploadedFile() profileImage?: Express.Multer.File) {
-    const imagePath = profileImage ? profileImage.path : null;
-    await this.userService.updateProfileImage(userId, imagePath);
   }
 }
