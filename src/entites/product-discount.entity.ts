@@ -14,11 +14,11 @@ export class ProductDiscount {
   @Column({ type: 'enum', enum: ProductDiscountType, default: ProductDiscountType.PERCENTAGE })
   type: ProductDiscountType;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2 })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   discountRate: number; // 할인율
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  value: number;
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  fixedAmount: number; // 고정 할인 금액
 
   @Column({ type: 'timestamp', nullable: true })
   startDate: Date;

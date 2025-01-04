@@ -10,6 +10,9 @@ import { CustomWinstonModule } from './logger/logger.module';
 import { LoggingMiddleware } from './pipes/middlewares/logging.middleware';
 import { TypeOrmLogger } from './logger/typeorm-logger.service';
 import { ProductModule } from './apis/product/product.module';
+import { UploaderModule } from './apis/uploader/uploader.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -22,9 +25,14 @@ import { ProductModule } from './apis/product/product.module';
       useFactory: typeORMConfig,
       extraProviders: [TypeOrmLogger],
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // 정적 파일을 제공할 디렉토리
+      serveRoot: '/uploads', // 정적 파일을 제공할 경로
+    }),
     AuthModule,
     UserModule,
     ProductModule,
+    UploaderModule,
   ],
   controllers: [],
   providers: [],

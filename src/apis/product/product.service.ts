@@ -41,87 +41,97 @@ export class ProductService {
   ) {}
 
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
-    return await this.transactionUtil.runInTransaction(this.dataSource, async (queryRunner: QueryRunner) => {
-      const categoryRepository = queryRunner.manager.getRepository(Category);
-      const category = await categoryRepository.findOne({ where: { id: createProductDto.categoryId } });
+    return await this.transactionUtil.runInTransaction(
+      this.dataSource,
+      async (queryRunner: QueryRunner) => {
+        const categoryRepository = queryRunner.manager.getRepository(Category);
+        const category = await categoryRepository.findOne({ where: { id: createProductDto.categoryId } });
 
-      // 1. 제품 생성
-      const productRepository = queryRunner.manager.getRepository(Product);
+        // 1. 제품 생성
+        const productRepository = queryRunner.manager.getRepository(Product);
 
-      const product = productRepository.create({ ...createProductDto, category });
-      const savedProduct = await productRepository.save(product);
+        const product = productRepository.create({ ...createProductDto, category });
+        const savedProduct = await productRepository.save(product);
 
-      // 2. 이미지 처리
-      if (createProductDto.files && createProductDto.files.length > 0) {
-        const productImagesRepository = queryRunner.manager.getRepository(ProductImages);
-        const imageEntities = createProductDto.files.map((file, index) =>
-          productImagesRepository.create({
+        // 2. 이미지 처리
+        if (createProductDto.productImages && createProductDto.productImages.length > 0) {
+          const productImagesRepository = queryRunner.manager.getRepository(ProductImages);
+          const imageEntities = createProductDto.productImages.map((file, index) =>
+            productImagesRepository.create({
+              product: savedProduct,
+              url: file.path,
+              altText: file.originalname,
+              isMain: index === 0, // 첫 번째 이미지를 메인으로 설정
+            })
+          );
+          await productImagesRepository.save(imageEntities);
+        }
+
+        // 3. 할인 정보 처리
+        if (createProductDto.discount) {
+          const { type, discountRate, fixedAmount } = createProductDto.discount;
+
+          if (type === ProductDiscountType.PERCENTAGE && !discountRate) {
+            throw new Error('DiscountRate is required for PERCENTAGE type discounts.');
+          }
+          if (type === ProductDiscountType.FIXED_AMOUNT && !fixedAmount) {
+            throw new Error('Value is required for FIXED type discounts.');
+          }
+
+          if (type === ProductDiscountType.PERCENTAGE) createProductDto.discount.fixedAmount = null;
+          if (type === ProductDiscountType.FIXED_AMOUNT) createProductDto.discount.discountRate = null;
+
+          const productDiscountRepository = queryRunner.manager.getRepository(ProductDiscount);
+          const discountEntity = productDiscountRepository.create({
+            ...createProductDto.discount,
             product: savedProduct,
-            url: file,
-            altText: file,
-            isMain: index === 0, // 첫 번째 이미지를 메인으로 설정
-          })
-        );
-        await productImagesRepository.save(imageEntities);
-      }
-
-      // 3. 할인 정보 처리
-      if (createProductDto.discount) {
-        const { type, discountRate, value } = createProductDto.discount;
-
-        if (type === ProductDiscountType.PERCENTAGE && !discountRate) {
-          throw new Error('DiscountRate is required for PERCENTAGE type discounts.');
-        }
-        if (type === ProductDiscountType.FIXED_AMOUNT && !value) {
-          throw new Error('Value is required for FIXED type discounts.');
+          });
+          await productDiscountRepository.save(discountEntity);
         }
 
-        const productDiscountRepository = queryRunner.manager.getRepository(ProductDiscount);
-        const discountEntity = productDiscountRepository.create({
-          ...createProductDto.discount,
+        if (createProductDto.tagIds && createProductDto.tagIds.length > 0) {
+          const tagRepository = queryRunner.manager.getRepository(Tag);
+          const tags = await tagRepository.find({ where: { id: In(createProductDto.tagIds) } });
+
+          if (tags.length !== createProductDto.tagIds.length) {
+            throw new Error('Some tags not found.');
+          }
+
+          const productTagsRepository = queryRunner.manager.getRepository(ProductTags);
+          const productTags = tags.map((tag) =>
+            productTagsRepository.create({
+              product: savedProduct,
+              tag,
+            })
+          );
+          await productTagsRepository.save(productTags);
+        }
+
+        // 4. 가격 기록 생성
+        const productPriceHistoryRepository = queryRunner.manager.getRepository(ProductPriceHistory);
+        const priceHistory = productPriceHistoryRepository.create({
           product: savedProduct,
+          price: savedProduct.price,
+          startDate: new Date(),
         });
-        await productDiscountRepository.save(discountEntity);
+        await productPriceHistoryRepository.save(priceHistory);
+
+        // 5. 초기 조회 정보 생성
+        const productViewRepository = queryRunner.manager.getRepository(ProductView);
+        const productView = productViewRepository.create({
+          product: savedProduct,
+          viewCount: 0,
+          lastViewedAt: null,
+        });
+        await productViewRepository.save(productView);
+
+        return savedProduct;
+      },
+      async (error) => {
+        await FileUtil.deleteFiles(createProductDto.productImages.map((file) => file.path));
+        console.log('Transaction rollback [이미지가 삭제 되었습니다.]', error.message);
       }
-
-      if (createProductDto.tagIds && createProductDto.tagIds.length > 0) {
-        const tagRepository = queryRunner.manager.getRepository(Tag);
-        const tags = await tagRepository.find({ where: { id: In(createProductDto.tagIds) } });
-
-        if (tags.length !== createProductDto.tagIds.length) {
-          throw new Error('Some tags not found.');
-        }
-
-        const productTagsRepository = queryRunner.manager.getRepository(ProductTags);
-        const productTags = tags.map((tag) =>
-          productTagsRepository.create({
-            product: savedProduct,
-            tag,
-          })
-        );
-        await productTagsRepository.save(productTags);
-      }
-
-      // 4. 가격 기록 생성
-      const productPriceHistoryRepository = queryRunner.manager.getRepository(ProductPriceHistory);
-      const priceHistory = productPriceHistoryRepository.create({
-        product: savedProduct,
-        price: savedProduct.price,
-        startDate: new Date(),
-      });
-      await productPriceHistoryRepository.save(priceHistory);
-
-      // 5. 초기 조회 정보 생성
-      const productViewRepository = queryRunner.manager.getRepository(ProductView);
-      const productView = productViewRepository.create({
-        product: savedProduct,
-        viewCount: 0,
-        lastViewedAt: null,
-      });
-      await productViewRepository.save(productView);
-
-      return savedProduct;
-    });
+    );
   }
 
   // 지금 당장은 안 쓰이는 코드인데 나중에 리팩토링하면서 사용할 수 있도록 남겨둔다.
