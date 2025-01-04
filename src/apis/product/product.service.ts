@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
-import { CreateTagsDto } from 'src/common/dtos/product/create-tag.dto';
 import { UpdateProductDto } from 'src/common/dtos/product/update-product.dto';
 import { ProductDiscountType } from 'src/common/enums/product-discount.enum';
 import { TransactionUtil } from 'src/common/utils/transcation.util';
@@ -192,24 +191,6 @@ export class ProductService {
     }
 
     return createdCategories;
-  }
-
-  async createTags(createTagsDto: CreateTagsDto): Promise<Tag[]> {
-    const tags = createTagsDto.categories;
-
-    // 중복 태그 확인
-    const existingTags = await this.tagRepository.findBy({
-      name: In(tags.map((tag) => tag.name)), // 배열을 In 연산자로 전달
-    });
-
-    if (existingTags.length > 0) {
-      const existingNames = existingTags.map((tag) => tag.name).join(', ');
-      throw new BadRequestException(`Duplicate tags: ${existingNames}`);
-    }
-
-    // 태그 생성
-    const newTags = this.tagRepository.create(tags);
-    return await this.tagRepository.save(newTags);
   }
 
   async deleteProduct(id: string): Promise<void> {

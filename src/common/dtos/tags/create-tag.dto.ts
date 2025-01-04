@@ -8,7 +8,7 @@ export class CreateTagDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: '태그 설명', example: 'this is a Apple', required: false })
+  @ApiProperty({ description: '태그 설명', example: 'This is an Apple', required: false })
   @IsOptional()
   @IsString()
   description?: string;
@@ -17,10 +17,11 @@ export class CreateTagDto {
 export class CreateTagsDto {
   @ApiProperty({
     description: '생성할 태그 배열',
-    type: [CreateTagDto],
+    type: CreateTagDto,
+    isArray: true,
   })
-  @IsArray() // 배열임을 명시
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateTagDto)
-  categories: CreateTagDto[];
+  tags: CreateTagDto[];
 }
