@@ -232,7 +232,7 @@ export class ProductService {
       const productImagesRepository = queryRunner.manager.getRepository(ProductImages);
       const product = await productRepository.findOne({
         where: { id: productId },
-        relations: ['productTags', 'images', 'discounts', 'category', 'priceHistories'], // 'tags'를 명시적으로 포함
+        relations: ['productTags', 'images', 'discounts', 'category', 'priceHistories'],
       });
 
       if (!product) {
@@ -288,6 +288,7 @@ export class ProductService {
         for (const update of updateData.updateImages) {
           const image = await productImagesRepository.findOne({ where: { id: update.imageId } });
           if (!image) continue;
+          await FileUtil.deleteFiles([image.url]); // 파일 삭제
           Object.assign(image, {
             altText: update.altText ?? image.altText,
             isMain: update.isMain ?? image.isMain,
