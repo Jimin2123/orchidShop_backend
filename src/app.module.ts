@@ -13,6 +13,8 @@ import { ProductModule } from './apis/product/product.module';
 import { UploaderModule } from './apis/uploader/uploader.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { TagsModule } from './apis/tags/tags.module';
+import { CategoriesModule } from './apis/categories/categories.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { join } from 'path';
     UserModule,
     ProductModule,
     UploaderModule,
+    TagsModule,
+    CategoriesModule,
   ],
   controllers: [],
   providers: [],

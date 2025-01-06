@@ -1,8 +1,6 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
-import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto';
-import { CreateTagsDto } from 'src/common/dtos/product/create-tag.dto';
 import { JwtAuthGuard } from 'src/guards/jwt.guard';
 import { RolesGuard } from 'src/guards/role.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -20,20 +18,6 @@ export class ProductController {
   @Roles(UserRole.ADMIN)
   async createProduct(@Body() createProductDto: CreateProductDto) {
     return await this.productService.createProduct(createProductDto);
-  }
-
-  @Post('category')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async createCategories(@Body() createCategoriesDto: CreateCategoriesDto) {
-    return await this.productService.createCategories(createCategoriesDto);
-  }
-
-  @Post('tag')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async createTags(@Body() createTagsDto: CreateTagsDto) {
-    return await this.productService.createTags(createTagsDto);
   }
 
   @Delete(':id')

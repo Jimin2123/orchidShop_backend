@@ -1,8 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateCategoriesDto } from 'src/common/dtos/product/create-category.dto';
 import { CreateProductDto } from 'src/common/dtos/product/create-product.dto';
-import { CreateTagsDto } from 'src/common/dtos/product/create-tag.dto';
 import { UpdateProductDto } from 'src/common/dtos/product/update-product.dto';
 import { ProductDiscountType } from 'src/common/enums/product-discount.enum';
 import { TransactionUtil } from 'src/common/utils/transcation.util';
@@ -32,10 +30,6 @@ export class ProductService {
     private readonly productPriceHistoryRepository: Repository<ProductPriceHistory>,
     @InjectRepository(ProductView)
     private readonly productViewRepository: Repository<ProductView>,
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
-    @InjectRepository(Tag)
-    private readonly tagRepository: Repository<Tag>,
     private readonly dataSource: DataSource,
     private readonly transactionUtil: TransactionUtil
   ) {}
@@ -159,59 +153,6 @@ export class ProductService {
     return await this.productImagesRepository.save(productImages);
   }
 
-  async createCategories(createCategoriesDto: CreateCategoriesDto): Promise<Category[]> {
-    const { categories } = createCategoriesDto;
-
-    // 결과를 저장할 배열
-    const createdCategories: Category[] = [];
-
-    for (const dto of categories) {
-      const { name, description, parentId } = dto;
-
-      // 1. 상위 카테고리 확인
-      let parentCategory: Category | null = null;
-      if (parentId) {
-        parentCategory = await this.categoryRepository.findOne({ where: { id: parentId } });
-        if (!parentCategory) {
-          throw new Error(`Parent category with ID ${parentId} not found.`);
-        }
-      }
-
-      // 2. 새 카테고리 생성
-      const newCategory = this.categoryRepository.create({
-        name,
-        description,
-        parent: parentCategory,
-      });
-
-      // 3. 저장
-      const savedCategory = await this.categoryRepository.save(newCategory);
-
-      // 4. 결과 배열에 추가
-      createdCategories.push(savedCategory);
-    }
-
-    return createdCategories;
-  }
-
-  async createTags(createTagsDto: CreateTagsDto): Promise<Tag[]> {
-    const tags = createTagsDto.categories;
-
-    // 중복 태그 확인
-    const existingTags = await this.tagRepository.findBy({
-      name: In(tags.map((tag) => tag.name)), // 배열을 In 연산자로 전달
-    });
-
-    if (existingTags.length > 0) {
-      const existingNames = existingTags.map((tag) => tag.name).join(', ');
-      throw new BadRequestException(`Duplicate tags: ${existingNames}`);
-    }
-
-    // 태그 생성
-    const newTags = this.tagRepository.create(tags);
-    return await this.tagRepository.save(newTags);
-  }
-
   async deleteProduct(id: string): Promise<void> {
     const product = await this.productRepository.findOne({ where: { id } });
 
@@ -251,7 +192,7 @@ export class ProductService {
       const productImagesRepository = queryRunner.manager.getRepository(ProductImages);
       const product = await productRepository.findOne({
         where: { id: productId },
-        relations: ['productTags', 'images', 'discounts', 'category', 'priceHistories'], // 'tags'를 명시적으로 포함
+        relations: ['productTags', 'images', 'discounts', 'category', 'priceHistories'],
       });
 
       if (!product) {
@@ -307,6 +248,7 @@ export class ProductService {
         for (const update of updateData.updateImages) {
           const image = await productImagesRepository.findOne({ where: { id: update.imageId } });
           if (!image) continue;
+          await FileUtil.deleteFiles([image.url]); // 파일 삭제
           Object.assign(image, {
             altText: update.altText ?? image.altText,
             isMain: update.isMain ?? image.isMain,
