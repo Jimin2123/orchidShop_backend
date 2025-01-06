@@ -11,7 +11,7 @@ import { UpdateTagDto, UpdateTagsDto } from 'src/common/dtos/tags/update-tag.dto
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
-  @Post('tag')
+  @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async createTags(@Body() createTagsDto: CreateTagsDto) {

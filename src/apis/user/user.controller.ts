@@ -31,7 +31,8 @@ export class UserController {
     this.logger.log('사용자 정보 조회', this.contextName);
     if (role === UserRole.ADMIN) {
       // 관리자 권한으로 다른 사용자 정보 조회
-      return await this.userService.findUserById(paramUserId);
+      if (paramUserId) return await this.userService.findUserById(paramUserId);
+      return await this.userService.findUserById(userId);
     }
     return await this.userService.findUserById(userId);
   }
